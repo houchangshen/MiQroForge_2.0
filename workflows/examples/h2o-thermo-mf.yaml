@@ -4,7 +4,7 @@
 # MiQroForge 2.0 工作流定义：
 #   geo-opt → freq → thermo-extract
 #
-# 使用 nodes/test/ 下的测试节点（busybox mock），验证全管线。
+# 使用 nodes/test/ 下的 mock 测试节点，验证全管线。
 #
 # Quality Gate 说明：
 #   - geo-opt.converged (must_pass)：几何优化必须收敛，否则 freq 不运行

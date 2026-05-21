@@ -18,7 +18,7 @@ from typing import Any
 class ComputeUsageTracker:
     """从 Argo workflow status 提取资源用量并记录到用户的使用量 JSONL。"""
 
-    def __init__(self, user_paths: "UserPaths", namespace: str = "miqroforge-v2"):
+    def __init__(self, user_paths: "UserPaths", namespace: str = ""):
         self._paths = user_paths
         self._ns = namespace
         self._log_path = user_paths.usage_dir / "compute_usage.jsonl"

@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import os
 import textwrap
 from pathlib import Path
 
@@ -137,7 +138,7 @@ class TestMFWorkflow:
             nodes=[MFNodeInstance(id="a", node="x")],
         )
         assert wf.mf_version == "1.0"
-        assert wf.namespace == "miqroforge-v2"
+        assert wf.namespace == os.environ.get("ARGO_NAMESPACE", "")
         assert wf.global_params == {}
         assert wf.connections == []
 
@@ -492,7 +493,7 @@ class TestCompiler:
         assert argo["apiVersion"] == "argoproj.io/v1alpha1"
         assert argo["kind"] == "Workflow"
         assert "generateName" in argo["metadata"]
-        assert argo["metadata"]["namespace"] == "miqroforge-v2"
+        assert argo["metadata"]["namespace"] == os.environ.get("ARGO_NAMESPACE", "")
 
     def test_compile_has_dag_entrypoint(self, validated_h2o):
         """编译结果包含 DAG 入口。"""
@@ -560,15 +561,6 @@ class TestCompiler:
         )
         assert "container" in geo_opt_template
         assert "image" in geo_opt_template["container"]
-
-    def test_compile_uses_busybox_image(self, validated_h2o):
-        """测试节点使用 busybox 镜像。"""
-        wf, report = validated_h2o
-        argo = compile_to_argo(wf, report.resolved_nodes, project_root=PROJECT_ROOT)
-        geo_opt_template = next(
-            t for t in argo["spec"]["templates"] if t["name"] == "mf-geo-opt"
-        )
-        assert "busybox" in geo_opt_template["container"]["image"]
 
     def test_compile_output_parameters(self, validated_h2o):
         """只有被下游连接的 stream output 才生成 Argo output parameter。"""
@@ -705,7 +697,7 @@ class TestCompiler:
             wf, report.resolved_nodes, project_root=PROJECT_ROOT
         )
         for cm in configmaps:
-            assert cm["metadata"]["namespace"] == "miqroforge-v2"
+            assert cm["metadata"]["namespace"] == os.environ.get("ARGO_NAMESPACE", "")
 
 
 # ═══════════════════════════════════════════════════════════════════════════

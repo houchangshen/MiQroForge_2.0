@@ -24,7 +24,7 @@ class Settings:
             "ARGO_SERVER_URL", "https://localhost:2746"
         )
         self.argo_namespace: str = os.environ.get(
-            "ARGO_NAMESPACE", "miqroforge-v2"
+            "ARGO_NAMESPACE", ""
         )
         # PVC 名用 ARGO_NAMESPACE，方便开发版/稳定版并行
         self.argo_pvc_name: str = self.argo_namespace

@@ -29,7 +29,7 @@ from workflows.pipeline.compiler import compile_to_argo, generate_configmaps
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 H2O_MF_YAML = PROJECT_ROOT / "workflows" / "examples" / "h2o-thermo-mf.yaml"
-NAMESPACE = os.environ.get("ARGO_NAMESPACE", "miqroforge-v2")
+NAMESPACE = os.environ.get("ARGO_NAMESPACE", "")
 
 
 def _argo_available() -> bool:

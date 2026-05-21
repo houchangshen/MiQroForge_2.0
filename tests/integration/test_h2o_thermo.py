@@ -2,7 +2,7 @@
 集成测试：H2O 热力学工作流骨架。
 
 在 Argo 上提交 3 步 DAG 工作流（geo-opt → freq → thermo-extract），
-用 busybox 空壳容器验证：
+用 shell 命令在容器内模拟计算流程验证：
   1. 工作流能成功完成
   2. DAG 依赖正确执行（3 个 Pod 按序启动）
   3. 参数在节点间正确传递
@@ -11,19 +11,19 @@
 前提：
   - kubectl / argo CLI 可用
   - miqroforge-v2 namespace 存在且 RBAC 就绪
-  - harbor.era.local/miqroforge2.0/busybox:latest 可拉取
 
 运行：
   pytest tests/integration/test_h2o_thermo.py -v
 """
 
 import json
+import os
 import subprocess
 import time
 
 import pytest
 
-NAMESPACE = "miqroforge-v2"
+NAMESPACE = os.environ.get("ARGO_NAMESPACE", "")
 WORKFLOW_YAML = "workflows/examples/h2o-thermo.yaml"
 TIMEOUT_SECONDS = 180
 

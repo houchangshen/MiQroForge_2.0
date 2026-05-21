@@ -15,7 +15,7 @@
 metadata:
   name: my-node-name                   # * 唯一标识。小写+连字符。测试节点用 test- 前缀
   node_type: compute                   # * compute | lightweight
-  base_image_ref: test-busybox         # * compute 必填。对应 base_images/registry.yaml 中的 name
+  base_image_ref: orca-6.1             # * compute 必填。对应 base_images/registry.yaml 中的 name
   version: "1.0.0"                     #   语义化版本。改端口 → 升大版本
   display_name: "My Node"              #   人类可读名称（默认从 name 生成）
   description: >                       #   节点功能描述

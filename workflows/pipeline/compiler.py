@@ -366,7 +366,7 @@ def _build_ephemeral_wrapper_script(
 import os, sys, json, subprocess
 import requests
 
-MF_API_URL = os.environ.get("MF_API_URL", "http://10.36.160.16:8100")
+MF_API_URL = os.environ.get("MF_API_URL", "http://localhost:8200")
 MF_INTERNAL_TOKEN = os.environ.get("MF_INTERNAL_TOKEN", "")
 MF_USER = os.environ.get("MF_USER", "")
 
@@ -519,7 +519,7 @@ def _build_nodegen_wrapper_script(
 import os, sys, json, subprocess
 import requests
 
-MF_API_URL = os.environ.get("MF_API_URL", "http://10.36.160.16:8100")
+MF_API_URL = os.environ.get("MF_API_URL", "http://localhost:8200")
 MF_INTERNAL_TOKEN = os.environ.get("MF_INTERNAL_TOKEN", "")
 MF_USER = os.environ.get("MF_USER", "")
 
@@ -1557,7 +1557,7 @@ def _build_ephemeral_template(
 
     # ── 环境变量注入 ──
     import os as _os
-    mf_api_url = _os.environ.get("MF_API_URL", "http://10.36.160.16:8100")
+    mf_api_url = _os.environ.get("MF_API_URL", "http://localhost:8200")
     mf_internal_token = _os.environ.get("MF_INTERNAL_TOKEN", "")
     env_vars: list[dict[str, str]] = [
         {"name": "MF_OUTPUT_DIR", "value": "/mf/output"},
@@ -1659,7 +1659,7 @@ def _build_prefab_template(
 
     # ── 环境变量注入 ──
     import os as _os
-    mf_api_url = _os.environ.get("MF_API_URL", "http://10.36.160.16:8100")
+    mf_api_url = _os.environ.get("MF_API_URL", "http://localhost:8200")
     mf_internal_token = _os.environ.get("MF_INTERNAL_TOKEN", "")
     env_vars: list[dict[str, str]] = [
         {"name": "MF_OUTPUT_DIR", "value": "/mf/output"},

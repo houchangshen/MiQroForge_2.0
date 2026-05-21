@@ -1,0 +1,46 @@
+# MiQroForge 2.0 — RBAC (Development)
+# Development namespace RBAC for Argo Workflow execution.
+#
+# ServiceAccount: miqroforge-dev-workflow-sa
+#   Bound to workflow-role for pod and workflow management.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: miqroforge-dev-workflow-sa
+  namespace: miqroforge-dev
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: workflow-role
+  namespace: miqroforge-dev
+rules:
+  - apiGroups: [""]
+    resources: [pods, pods/log]
+    verbs: [get, list, watch, create, delete, patch]
+  - apiGroups: [""]
+    resources: [configmaps]
+    verbs: [get, list, watch, create, update, patch]
+  - apiGroups: ["argoproj.io"]
+    resources: [workflows, workflowtemplates, cronworkflows]
+    verbs: [get, list, watch, create, update, patch, delete]
+  - apiGroups: ["argoproj.io"]
+    resources: [workflowtaskresults]
+    verbs: [create, patch]
+  - apiGroups: ["argoproj.io"]
+    resources: [workflowtasksets]
+    verbs: [get, list, watch, patch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: workflow-role-binding
+  namespace: miqroforge-dev
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: workflow-role
+subjects:
+  - kind: ServiceAccount
+    name: miqroforge-dev-workflow-sa
+    namespace: miqroforge-dev

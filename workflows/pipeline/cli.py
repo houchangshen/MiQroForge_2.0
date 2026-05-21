@@ -170,7 +170,7 @@ def cmd_compile(yaml_path: str) -> int:
 def cmd_run(yaml_path: str) -> int:
     """校验 + 编译 + 提交 + 流式日志 + 生成报告。"""
     project_root = _detect_project_root()
-    namespace = os.environ.get("ARGO_NAMESPACE", "miqroforge-v2")
+    namespace = os.environ.get("ARGO_NAMESPACE", "")
     docker_hub_mirror = os.environ.get("DOCKER_HUB_MIRROR", "")
 
     # Step 1: Load + Validate

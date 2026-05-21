@@ -28,6 +28,7 @@ data/
 # ── Claude Code ────────────────────────────────────
 .claude/
 CLAUDE.md
+AGENTS.md
 
 # ── Frontend build & dependencies ──────────────────
 frontend/dist/
@@ -36,10 +37,6 @@ frontend/node_modules/
 # ── Backup files ──────────────────────────────────
 bak/
 
-# ── Workflow runs & logs ────────────────────────────
-# 运行时产生的工作流输出和日志，不入库
-runs/
-logs/
 
 # ── 软件安装包（BYOB：用户自行提供，不入库）────────────────────────────────
 # ORCA 及其他计算软件的 tarball，体积大且受许可协议限制，不得入库
@@ -57,3 +54,6 @@ nodes/node_index.yaml
 
 # ── userdata/ — 用户数据隔离目录（AI 生成节点、工作流、向量库等）──────────
 userdata/
+
+# ── OpenCode / Agent 工作目录 ─────────────────────────
+.omo/

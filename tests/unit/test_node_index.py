@@ -196,7 +196,7 @@ class TestScanner:
         names = [e.name for e in index.entries]
         assert "test-thermo-extractor" in names
         entry = next(e for e in index.entries if e.name == "test-thermo-extractor")
-        # mock 节点为 compute 类型（使用 test-busybox 镜像）
+        # mock 节点为 compute 类型
         assert entry.node_type == "compute"
 
     def test_port_summaries_have_details(self, project_root):

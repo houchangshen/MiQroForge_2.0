@@ -48,7 +48,7 @@ def load_available_images(project_root: Path | None = None) -> list[dict[str, An
             })
 
     # 过滤掉内部/测试用镜像
-    _EXCLUDE_IMAGES = {"test-busybox", "ephemeral-py"}
+    _EXCLUDE_IMAGES = {"ephemeral-py"}
     images = [img for img in images if img.get("name", "") not in _EXCLUDE_IMAGES]
 
     return images

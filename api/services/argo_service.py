@@ -13,7 +13,7 @@ import yaml
 class ArgoService:
     """Argo 工作流提交和查询服务。"""
 
-    def __init__(self, namespace: str = "miqroforge-v2") -> None:
+    def __init__(self, namespace: str = "") -> None:
         self.namespace = namespace
 
     def submit(self, argo_dict: dict, configmaps: list[dict]) -> dict:

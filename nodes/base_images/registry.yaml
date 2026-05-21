@@ -6,19 +6,6 @@
 # =============================================================================
 
 images:
-  - name: test-busybox
-    display_name: "Test BusyBox"
-    description: "Minimal busybox image for testing compute node pipelines. Not for production."
-    image: harbor.era.local/miqroforge2.0/busybox
-    tag: latest
-    source_type: harbor
-    software_name: busybox
-    software_version: "1.36"
-    additional_software: {}
-    workdir: /mf/workdir
-    entrypoint_convention: /mf/profile/run.sh
-    license_type: GPL-2.0
-
   - name: ephemeral-py
     display_name: "Ephemeral Python"
     description: >

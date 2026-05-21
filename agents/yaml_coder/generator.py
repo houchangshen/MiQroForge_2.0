@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from typing import Any
 
@@ -159,7 +160,10 @@ def generate_yaml(state: YAMLCoderState) -> dict[str, Any]:
     llm_with_tools = llm.bind_tools(tools)
 
     # ── 构建初始消息（节点名列表，无 NodeSpec 详情）───────────────────────
-    system_content = load_prompt("yaml_coder/prompts/yaml_system.jinja2")
+    system_content = load_prompt(
+        "yaml_coder/prompts/yaml_system.jinja2",
+        argo_namespace=os.environ.get("ARGO_NAMESPACE", ""),
+    )
     user_content = load_prompt(
         "yaml_coder/prompts/yaml_generate.jinja2",
         semantic_workflow_json=json.dumps(

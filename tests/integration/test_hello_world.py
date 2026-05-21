@@ -9,13 +9,14 @@
 运行：
   pytest tests/integration/test_hello_world.py -v
 """
+import os
 import re
 import subprocess
 import time
 
 import pytest
 
-NAMESPACE = "miqroforge-v2"
+NAMESPACE = os.environ.get("ARGO_NAMESPACE", "")
 WORKFLOW_YAML = "workflows/examples/hello-world.yaml"
 TIMEOUT_SECONDS = 120
 

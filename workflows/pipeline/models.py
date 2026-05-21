@@ -262,7 +262,7 @@ class MFWorkflow(BaseModel):
         description="工作流描述。",
     )
     namespace: str = Field(
-        default="miqroforge-v2",
+        default="",
         description="Kubernetes 命名空间。",
     )
     global_params: dict[str, Any] = Field(

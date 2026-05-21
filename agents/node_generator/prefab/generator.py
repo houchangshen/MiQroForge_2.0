@@ -156,7 +156,7 @@ def _resolve_image_from_nodespec(nodespec_yaml: str) -> str:
     data = yaml.safe_load(registry_path.read_text("utf-8"))
     images = data if isinstance(data, list) else data.get("images", [])
 
-    _EXCLUDE = {"test-busybox", "ephemeral-py"}
+    _EXCLUDE = {"ephemeral-py"}
     images = [img for img in images if isinstance(img, dict) and img.get("name", "") not in _EXCLUDE]
 
     # 精确匹配
