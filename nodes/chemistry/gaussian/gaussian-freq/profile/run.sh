@@ -62,12 +62,12 @@ echo "[gaussian-freq] Generated input.gjf"
 # ── 运行 Gaussian ─────────────────────────────────────────────────────────────
 cd "$WORKDIR"
 echo "[gaussian-freq] Running Gaussian frequency analysis..."
-if ! g16 < input.gjf > output.log 2>&1; then
+g16 < input.gjf > output.log 2>&1 || {
     ec=$?
     echo "[gaussian-freq][ERROR] g16 exited with ${ec}; dumping output.log tail:" >&2
     tail -n 200 output.log >&2 || true
     exit "${ec}"
-fi
+}
 echo "[gaussian-freq] Gaussian finished. Parsing output..."
 
 # ── 解析输出 ──────────────────────────────────────────────────────────────────

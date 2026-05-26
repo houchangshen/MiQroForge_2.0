@@ -19,7 +19,6 @@ name: ephemeral-demo
 description: >
   演示临时节点：geometry input → DFT geometry optimization →
   ephemeral energy extractor → thermo extractor.
-namespace: miqroforge-v2
 
 global_params: {}
 

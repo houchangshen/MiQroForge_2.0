@@ -49,10 +49,21 @@ from .models import MFWorkflow, MFNodeInstance
 # 临时节点 Python 镜像（与 lightweight 节点一致）
 _EPHEMERAL_PYTHON_VERSION = "3.11"
 
+def _get_deploy_namespace() -> str:
+    """读取 ARGO_NAMESPACE 作为部署命名空间。
+
+    namespace 是部署层面的事，不属于 MF YAML。
+    直接读 os.environ（load_dotenv 已在 api/config.py 导入时写入），
+    避免 get_settings() 的 lru_cache 在 Settings 初始化过早时缓存空值。
+    """
+    import os
+    return os.environ.get("ARGO_NAMESPACE", "")
+
+
 def _get_pvc_name() -> str:
     """PVC 名用 ARGO_NAMESPACE，方便开发版/稳定版并行。"""
-    from api.config import get_settings
-    return get_settings().argo_pvc_name
+    import os
+    return os.environ.get("ARGO_NAMESPACE", "")
 
 
 def _workspace_volume_mount(project_id: str = "") -> dict[str, str]:
@@ -262,12 +273,13 @@ def compile_to_argo(
         dag_tasks.append(pipeline_task)
 
     # 组装 Argo Workflow
+    resolved_ns = _get_deploy_namespace()
     argo_wf: dict[str, Any] = {
         "apiVersion": "argoproj.io/v1alpha1",
         "kind": "Workflow",
         "metadata": {
             "generateName": f"{slug}-",
-            "namespace": workflow.namespace,
+            "namespace": resolved_ns,
             "labels": {
                 "miqroforge.io/workflow": slug,
                 "miqroforge.io/mf-version": workflow.mf_version,
@@ -275,7 +287,7 @@ def compile_to_argo(
         },
         "spec": {
             "entrypoint": "mf-dag",
-            "serviceAccountName": f"{workflow.namespace}-workflow-sa",
+            "serviceAccountName": f"{resolved_ns}-workflow-sa",
             "templates": [
                 {
                     "name": "mf-dag",
@@ -624,6 +636,7 @@ def generate_configmaps(
     if project_root is None:
         project_root = Path.cwd()
 
+    resolved_ns = _get_deploy_namespace()
     configmaps: list[dict[str, Any]] = []
 
     for node_inst in workflow.nodes:
@@ -649,7 +662,7 @@ def generate_configmaps(
             "kind": "ConfigMap",
             "metadata": {
                 "name": cm_name,
-                "namespace": workflow.namespace,
+                "namespace": resolved_ns,
                 "labels": {
                     "miqroforge.io/node": spec.metadata.name,
                     "miqroforge.io/version": spec.metadata.version,
@@ -1557,7 +1570,9 @@ def _build_ephemeral_template(
 
     # ── 环境变量注入 ──
     import os as _os
-    mf_api_url = _os.environ.get("MF_API_URL", "http://localhost:8200")
+    # MF_POD_API_URL 优先：Pod 内需要可达 API Server 的地址（非 localhost）。
+    # 未设置时回退到 MF_API_URL（向后兼容运行版）。
+    mf_api_url = _os.environ.get("MF_POD_API_URL") or _os.environ.get("MF_API_URL", "http://localhost:8200")
     mf_internal_token = _os.environ.get("MF_INTERNAL_TOKEN", "")
     env_vars: list[dict[str, str]] = [
         {"name": "MF_OUTPUT_DIR", "value": "/mf/output"},
@@ -1574,7 +1589,7 @@ def _build_ephemeral_template(
     for param in input_params:
         env_vars.append({
             "name": param["name"],
-            "value": f"{{{{inputs.parameters.{param['name']}}}}}",
+            "value": "{{inputs.parameters.%s}}" % param["name"],
         })
 
     # ── Wrapper 脚本自带 preamble，不需要额外拼接 ──
@@ -1659,7 +1674,7 @@ def _build_prefab_template(
 
     # ── 环境变量注入 ──
     import os as _os
-    mf_api_url = _os.environ.get("MF_API_URL", "http://localhost:8200")
+    mf_api_url = _os.environ.get("MF_POD_API_URL") or _os.environ.get("MF_API_URL", "http://localhost:8200")
     mf_internal_token = _os.environ.get("MF_INTERNAL_TOKEN", "")
     env_vars: list[dict[str, str]] = [
         {"name": "MF_OUTPUT_DIR", "value": "/mf/output"},
@@ -1677,7 +1692,7 @@ def _build_prefab_template(
             "name": param["name"],
             "value": f"{{{{inputs.parameters.{param['name']}}}}}",
         })
-
+    
     # ── Preamble：将环境变量写入 /mf/input/ 文件 ──
     preamble_lines = [
         "import os, pathlib as _pl",

@@ -32,7 +32,6 @@ description: >
   Cross-software single-point energy comparison: ORCA B3LYP/def2-SVP vs
   Psi4 B3LYP/cc-pVDZ for the same H2O geometry. Demonstrates fan-out
   (one geometry → multiple compute nodes in parallel).
-namespace: miqroforge-v2
 
 global_params: {}
 

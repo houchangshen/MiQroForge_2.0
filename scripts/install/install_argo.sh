@@ -85,7 +85,16 @@ install_server() {
     # 部署 Argo Workflow
     info "部署 Argo Workflow ${ARGO_VERSION} 到集群..."
     local manifest_url="https://github.com/argoproj/argo-workflows/releases/download/${ARGO_VERSION}/install.yaml"
-    kubectl apply -n "${ARGO_NAMESPACE}" -f "${manifest_url}"
+
+    local argo_exists=false
+    if kubectl get deployment -n "${ARGO_NAMESPACE}" workflow-controller &>/dev/null 2>&1; then
+        argo_exists=true
+        warn "检测到已有 Argo Workflow Controller，跳过官方 manifest 安装。"
+        warn "如需升级 Argo 版本，请手动执行："
+        warn "  kubectl apply -n ${ARGO_NAMESPACE} -f ${manifest_url}"
+    else
+        kubectl apply -n "${ARGO_NAMESPACE}" -f "${manifest_url}"
+    fi
 
     # 应用项目自定义配置
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -100,9 +109,15 @@ install_server() {
         kubectl apply -f "${infra_dir}/k8s/rbac.yaml"
     fi
     if [[ -f "${infra_dir}/argo/config/workflow-controller-configmap.yaml" ]]; then
-        info "应用 Argo 控制器配置..."
-        kubectl apply -n "${ARGO_NAMESPACE}" \
-            -f "${infra_dir}/argo/config/workflow-controller-configmap.yaml"
+        if $argo_exists; then
+            warn "Argo 已安装，跳过 configmap 覆盖（保留现有配置）。"
+            info "如需更新 configmap，请手动执行："
+            info "  kubectl apply -n ${ARGO_NAMESPACE} -f ${infra_dir}/argo/config/workflow-controller-configmap.yaml"
+        else
+            info "应用 Argo 控制器配置..."
+            kubectl apply -n "${ARGO_NAMESPACE}" \
+                -f "${infra_dir}/argo/config/workflow-controller-configmap.yaml"
+        fi
     fi
 
     # 等待 Argo Server pod 就绪（最多 120 秒）

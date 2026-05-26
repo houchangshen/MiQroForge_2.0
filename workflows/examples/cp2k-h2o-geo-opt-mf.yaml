@@ -26,7 +26,6 @@ name: cp2k-h2o-geo-opt
 description: >
   H2O molecule geometry optimization using CP2K in a large vacuum box.
   Demonstrates CP2K molecular DFT with GPW method.
-namespace: miqroforge-v2
 
 global_params: {}
 

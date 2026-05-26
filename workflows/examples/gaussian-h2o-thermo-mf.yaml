@@ -28,7 +28,6 @@ name: gaussian-h2o-thermo
 description: >
   H2O thermochemistry using Gaussian 16: geometry optimization → frequency
   analysis. Uses atomic method/basis_set parameters (ORCA-style).
-namespace: miqroforge-v2
 
 global_params: {}
 

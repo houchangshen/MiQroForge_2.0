@@ -27,9 +27,10 @@ from langchain_core.outputs import LLMResult
 class TokenUsageTracker(BaseCallbackHandler):
     """捕获每次 LLM 调用的 token 用量并写入用户的使用量 JSONL。"""
 
-    def __init__(self, user_paths: "UserPaths", purpose: str = "unknown"):
+    def __init__(self, user_paths: "UserPaths", purpose: str = "unknown", currency: str = "USD"):
         self._user_paths = user_paths
         self._purpose = purpose
+        self._currency = currency
         self._current: dict | None = None
         self.records: list[dict] = []
         self._raise_error = False  # 不中断 LLM 调用
@@ -86,7 +87,13 @@ class TokenUsageTracker(BaseCallbackHandler):
             "input_tokens": token_usage.get("input_tokens", 0),
             "output_tokens": token_usage.get("output_tokens", 0),
             "total_tokens": token_usage.get("total_tokens", 0),
+            "currency": self._currency,
         }
+        # OpenAI-compatible providers use prompt_tokens/completion_tokens
+        if record["input_tokens"] == 0 and "prompt_tokens" in token_usage:
+            record["input_tokens"] = token_usage.get("prompt_tokens", 0)
+        if record["output_tokens"] == 0 and "completion_tokens" in token_usage:
+            record["output_tokens"] = token_usage.get("completion_tokens", 0)
         # 如果 response 没有 token_usage，用 generation info 估算
         if record["total_tokens"] == 0:
             if hasattr(response, "generations") and response.generations:

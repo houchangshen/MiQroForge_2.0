@@ -49,6 +49,7 @@ class PrefabGenState(TypedDict, total=False):
     error: Optional[str]
 
     # 控制标志（以 _ 开头的为 API 端点注入的控制参数）
+    _recorded_lesson: str                 # Agent 通过 record_lesson 工具记录的教训（≤200 字符）
     _sandbox_enabled: bool                # 是否启用沙箱工具（设计时 False，运行时 True）
     _input_data: dict[str, str]           # 真实上游输入数据
     _input_ports: list[str]               # Argo DAG 输入端口名（供 port_mapping 和 prompt 使用）

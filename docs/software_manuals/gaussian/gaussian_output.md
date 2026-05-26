@@ -11,7 +11,7 @@ The `Output` keyword creates input files for external programs or writes Fortran
 Write a PROAIMS wavefunction (.wfn) file. The filename is read from the input stream on a separate line.
 
 ```
-# B3LYP/6-31G(d) Output=WFN
+\# B3LYP/6-31G(d) Output=WFN
 
 Title
 
@@ -26,7 +26,7 @@ output.wfn
 Write a wavefunction file for newer versions of AIMPAC (.wfx files). Filename read from input stream.
 
 ```
-# B3LYP/6-31G(d) Output=WFX
+\# B3LYP/6-31G(d) Output=WFX
 
 Title
 

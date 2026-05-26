@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Trash2, AlertTriangle, Brain, Loader2 } from 'lucide-react'
+import { getToken } from '../lib/auth'
 
 const API_BASE = '/api/v1/memory'
 
@@ -21,7 +22,10 @@ interface MemoryEntry {
 }
 
 async function fetchMemories(software: string): Promise<{ entries: MemoryEntry[]; count: number }> {
-  const resp = await fetch(`${API_BASE}/list?software=${software}`)
+  const token = getToken()
+  const resp = await fetch(`${API_BASE}/list?software=${software}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
   if (!resp.ok) throw new Error(await resp.text())
   return resp.json()
 }
@@ -37,9 +41,13 @@ async function deleteMemory(params: {
   if (params.deleteAll) searchParams.set('delete_all', 'true')
   if (params.entryId) searchParams.set('entry_id', params.entryId)
   if (params.taskPrefix) searchParams.set('task_prefix', params.taskPrefix)
+  const token = getToken()
   const resp = await fetch(`${API_BASE}/delete`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: JSON.stringify(Object.fromEntries(searchParams)),
   })
   // The delete endpoint uses query params, but POST body is fine as fallback

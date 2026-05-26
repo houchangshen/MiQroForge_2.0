@@ -550,7 +550,8 @@ def save_run_outputs(
     # Record compute usage for billing
     try:
         from api.tracking.compute_tracker import ComputeUsageTracker
-        ct = ComputeUsageTracker(paths, settings.argo_namespace)
+        from api.routers.agents import _load_currency
+        ct = ComputeUsageTracker(paths, settings.argo_namespace, currency=_load_currency(settings))
         ct.record_workflow(wf, project_id)
     except Exception:
         pass  # Non-critical, don't block the main flow

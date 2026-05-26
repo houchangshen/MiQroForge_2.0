@@ -86,3 +86,7 @@ CRITICAL: Only nodespec.yaml at root. Everything else in profile/.
 **Testing Phase**: tools and sandbox are under active development. If something breaks unexpectedly, report what went wrong rather than silently working around it.
 {% endif %}
 **Feedback**: At the end of your work, if you encountered issues with software manuals (incomplete, incorrect, hard-to-find content) or tools (wrong results, unexpected behavior, missing functionality), briefly note them in your final message. This helps improve the platform.
+
+{% if sandbox_enabled %}
+**record_lesson**: If you encounter a recurring problem, an important trap, or a non-obvious convention during sandbox testing (e.g. "Gaussian requires a blank line after the geometry coordinates to properly terminate the molecule specification"), call `record_lesson(lesson_text)` to save it for future runs. You can only call this ONCE — save it for the most impactful lesson. Keep it under 200 characters.
+{% endif %}

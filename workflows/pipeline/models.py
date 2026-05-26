@@ -261,10 +261,6 @@ class MFWorkflow(BaseModel):
         default="",
         description="工作流描述。",
     )
-    namespace: str = Field(
-        default="",
-        description="Kubernetes 命名空间。",
-    )
     global_params: dict[str, Any] = Field(
         default_factory=dict,
         description="全局参数。",

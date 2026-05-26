@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { argoApi } from '../api/argo-api'
 import { useRunOverlayStore } from '../stores/run-overlay-store'
@@ -18,8 +18,15 @@ const TERMINAL = new Set(['Succeeded', 'Failed', 'Error', 'PartialSuccess'])
 export function useRunOverlayPolling() {
   const activeRunName = useRunOverlayStore((s) => s.activeRunName)
   const updateFromArgo = useRunOverlayStore((s) => s.updateFromArgo)
-  // Track whether we've already called save-outputs for the current run
-  const savedRef = useRef<string | null>(null)
+  // Persist saved run names to sessionStorage so restores don't re-trigger saveOutputs
+  const savedRuns = useRef<Set<string>>(loadSavedRunsFromStorage())
+  // Track whether the polling query itself was the one that triggered save
+  const saveTriggeredByPolling = useRef(false)
+
+  useEffect(() => {
+    // When activeRunName changes to a new run, reset the flag
+    saveTriggeredByPolling.current = false
+  }, [activeRunName])
 
   useQuery({
     queryKey: ['run-overlay', activeRunName],
@@ -28,8 +35,7 @@ export function useRunOverlayPolling() {
       updateFromArgo(detail.raw)
 
       // Save outputs + canvas to runs/ when run first reaches a terminal state
-      if (TERMINAL.has(detail.phase) && savedRef.current !== activeRunName) {
-        savedRef.current = activeRunName
+      if (TERMINAL.has(detail.phase) && !savedRuns.current.has(activeRunName!)) {
         const projectId = useProjectStore.getState().currentProjectId ?? undefined
         const { meta, nodes, edges } = useWorkflowStore.getState()
         const { nodeStatuses, workflowPhase } = useRunOverlayStore.getState()
@@ -56,6 +62,10 @@ export function useRunOverlayPolling() {
               argoApi.saveOutputs(activeRunName!, projectId, updatedCanvas).catch(() => {})
             }
           }
+          // Persist that we saved this run so restores don't duplicate
+          savedRuns.current.add(activeRunName!)
+          saveSavedRunsToStorage(savedRuns.current)
+          saveTriggeredByPolling.current = true
           // ── Apply nodegen_updates to live workflow canvas ──
           const updates = (result as Record<string, unknown>).nodegen_updates as
             | Record<string, Record<string, unknown>>
@@ -154,4 +164,24 @@ export function useRunOverlayPolling() {
       return 3000   // poll every 3 s while running
     },
   })
+}
+
+// ── sessionStorage dedup helpers ─────────────────────────────────────────────
+const SAVED_RUNS_KEY = 'mf2:saved-runs'
+
+function loadSavedRunsFromStorage(): Set<string> {
+  try {
+    const raw = sessionStorage.getItem(SAVED_RUNS_KEY)
+    return new Set(raw ? JSON.parse(raw) : [])
+  } catch {
+    return new Set()
+  }
+}
+
+function saveSavedRunsToStorage(runs: Set<string>) {
+  try {
+    sessionStorage.setItem(SAVED_RUNS_KEY, JSON.stringify([...runs]))
+  } catch {
+    // ignore quota errors
+  }
 }

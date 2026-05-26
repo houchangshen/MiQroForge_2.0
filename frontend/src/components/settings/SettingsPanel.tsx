@@ -10,6 +10,32 @@ import {
 } from '../../stores/shortcuts-store'
 import type { ShortcutId } from '../../stores/shortcuts-store'
 
+// ─── Theme definitions ───────────────────────────────────────────────────────────
+
+interface ThemeOption {
+  id: Theme
+  label: string
+  icon: string
+}
+const THEMES: ThemeOption[] = [
+  { id: 'light',    label: 'Warm',      icon: '☀' },
+  { id: 'dark',     label: 'Dark',      icon: '🌙' },
+  { id: 'forest',   label: 'Forest',    icon: '🌲' },
+  { id: 'ocean',    label: 'Ocean',     icon: '🌊' },
+  { id: 'sunset',   label: 'Sunset',    icon: '🌇' },
+  { id: 'midnight', label: 'Midnight',  icon: '🌌' },
+]
+
+// RGB triplets for color preview: [bg-base, bg-card, text-primary]
+const THEME_COLORS: Record<Theme, [string, string, string]> = {
+  light:    ['255 253 245', '244 240 226', '45 36 25'],
+  dark:     ['3 7 18',    '31 41 55',   '243 244 246'],
+  forest:   ['240 250 240', '220 237 225', '30 60 40'],
+  ocean:    ['240 248 255', '218 235 248', '15 45 75'],
+  sunset:   ['255 248 240', '248 230 215', '60 35 20'],
+  midnight: ['10 15 30',  '26 35 58',   '230 235 245'],
+}
+
 // ─── Shortcut row ──────────────────────────────────────────────────────────────
 
 function ShortcutRow({ id }: { id: ShortcutId }) {
@@ -89,20 +115,49 @@ export function SettingsContent() {
         <div className="text-xs font-semibold text-mf-text-secondary uppercase tracking-wide mb-2">
           Theme
         </div>
-        <div className="flex gap-2">
-          {(['light', 'dark'] as Theme[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTheme(t)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs rounded border transition-colors ${
-                theme === t
-                  ? 'bg-blue-600 border-blue-500 text-white'
-                  : 'bg-mf-card border-mf-border text-mf-text-secondary hover:bg-mf-hover hover:text-mf-text-primary'
-              }`}
-            >
-              {t === 'light' ? '☀' : '🌙'} {t.charAt(0).toUpperCase() + t.slice(1)}
-            </button>
-          ))}
+        <div className="grid grid-cols-3 gap-2">
+          {THEMES.map((t) => {
+            const colors = THEME_COLORS[t.id]
+            return (
+              <button
+                key={t.id}
+                onClick={() => setTheme(t.id)}
+                title={t.label}
+                className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-all ${
+                  theme === t.id
+                    ? 'border-blue-500 bg-blue-500/10 ring-1 ring-blue-400'
+                    : 'border-mf-border bg-mf-card hover:bg-mf-hover hover:border-mf-text-muted'
+                }`}
+              >
+                {/* Mini color preview: 3 swatches */}
+                <div className="flex gap-0.5 rounded overflow-hidden w-full h-5">
+                  <div
+                    className="flex-1"
+                    style={{ backgroundColor: `rgb(${colors[0]})` }}
+                  />
+                  <div
+                    className="flex-1"
+                    style={{ backgroundColor: `rgb(${colors[1]})` }}
+                  />
+                  <div
+                    className="flex-1"
+                    style={{ backgroundColor: `rgb(${colors[2]})` }}
+                  />
+                </div>
+                {/* Icon + name */}
+                <div className="flex items-center gap-1 text-[11px] font-medium">
+                  <span className="text-xs leading-none">{t.icon}</span>
+                  <span className={theme === t.id ? 'text-blue-400' : 'text-mf-text-secondary'}>
+                    {t.label}
+                  </span>
+                </div>
+                {/* Checkmark for selected */}
+                {theme === t.id && (
+                  <div className="text-[9px] text-blue-400 font-semibold">● Active</div>
+                )}
+              </button>
+            )
+          })}
         </div>
       </div>
 

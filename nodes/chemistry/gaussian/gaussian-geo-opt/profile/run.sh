@@ -63,12 +63,12 @@ echo "[gaussian-geo-opt] Generated input.gjf"
 # ── 运行 Gaussian ─────────────────────────────────────────────────────────────
 cd "$WORKDIR"
 echo "[gaussian-geo-opt] Running Gaussian optimization..."
-if ! g16 < input.gjf > output.log 2>&1; then
+g16 < input.gjf > output.log 2>&1 || {
     ec=$?
     echo "[gaussian-geo-opt][ERROR] g16 exited with ${ec}; dumping output.log tail:" >&2
     tail -n 200 output.log >&2 || true
     exit "${ec}"
-fi
+}
 echo "[gaussian-geo-opt] Gaussian finished. Parsing output..."
 
 # ── 解析输出 ──────────────────────────────────────────────────────────────────

@@ -9,7 +9,6 @@ name: cp2k-si-bulk-cell-opt
 description: >
   Periodic DFT cell optimization of bulk silicon (diamond structure)
   using CP2K. Finds equilibrium lattice constant and atomic positions.
-namespace: miqroforge-v2
 
 global_params: {}
 

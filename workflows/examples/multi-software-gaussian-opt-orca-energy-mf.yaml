@@ -31,7 +31,6 @@ name: multi-software-g16-opt-orca-sp
 description: >
   Cross-software pipeline: Gaussian 16 geometry optimization → ORCA high-level
   single-point energy. Optimized structure from Gaussian, refined energy from ORCA.
-namespace: miqroforge-v2
 
 global_params: {}
 

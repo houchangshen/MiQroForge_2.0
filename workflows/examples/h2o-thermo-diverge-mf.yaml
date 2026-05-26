@@ -15,7 +15,6 @@
 mf_version: "1.0"
 name: h2o-thermo-diverge
 description: "Quality gate termination test: diverging geo-opt blocks downstream freq + thermo steps"
-namespace: miqroforge-v2
 
 global_params: {}
 

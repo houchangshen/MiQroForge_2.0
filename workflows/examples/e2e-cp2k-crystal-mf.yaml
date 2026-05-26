@@ -3,7 +3,6 @@
 mf_version: "1.0"
 name: e2e-cp2k-crystal
 description: "CP2K crystal test: cp2k-dft with PBE functional"
-namespace: miqroforge-v2
 
 global_params: {}
 

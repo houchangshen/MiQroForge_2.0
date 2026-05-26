@@ -30,6 +30,10 @@ _HOP_BY_HOP = {
     "te", "trailers", "transfer-encoding", "upgrade",
     "content-encoding",   # httpx 已解码，不要把 gzip 声明转发给客户端
     "content-length",     # 重新计算
+    # 代理场景下需要剥离的安全头，避免浏览器端策略冲突
+    "strict-transport-security",
+    "content-security-policy",
+    "x-frame-options",
 }
 
 

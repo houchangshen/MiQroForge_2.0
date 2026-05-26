@@ -1,26 +1,19 @@
 # MiQroForge 2.0 — Argo Workflow Controller ConfigMap
 # 控制器核心配置，覆盖默认行为以适配平台需求。
 # 参考：https://argo-workflows.readthedocs.io/en/latest/workflow-controller-configmap/
+#
+# ⚠️ 版本兼容性：当前集群 Argo v3.6.2。
+#   以下字段需 v3.7+，已注释禁用：
+#     - podGCStrategy             (v3.7+)
+#     - resourceStateCheckFrequency (v3.7+)
+#   workflowNamespace 留空 = 监听所有 namespace（开发版/运行版隔离靠 K8s namespace）。
+#   workflowDefaults 删除 — MiQroForge 编译器在每份 Argo YAML 里已显式指定 ServiceAccount。
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: workflow-controller-configmap
   namespace: argo
 data:
-  # 默认工作流命名空间
-  workflowNamespace: "miqroforge-v2"
-
-  # 工作流 Pod 默认使用的 ServiceAccount
-  workflowDefaults: |
-    spec:
-      serviceAccountName: miqroforge-v2-workflow-sa
-
   # 并发控制：全局最大并行 workflow 数
   # 调整此值以匹配集群实际资源容量
   parallelism: "10"
-
-  # Pod GC 策略：成功的 Pod 保留 24h，失败的保留 72h（便于 Debug）
-  podGCStrategy: "OnWorkflowCompletion"
-
-  # 资源状态上报间隔（秒）
-  resourceStateCheckFrequency: "10s"

@@ -85,11 +85,15 @@ class EmbeddingMemoryStore:
         if "lessons" in meta and isinstance(meta["lessons"], list):
             meta["lessons_json"] = json.dumps(meta["lessons"], ensure_ascii=False)
 
-        # 1. ChromaDB
+        # 1. ChromaDB — embed both task AND lessons for better retrieval
         try:
+            doc_text = task
+            if meta.get("lessons_json"):
+                lessons_list = json.loads(meta["lessons_json"])
+                doc_text = task + " | " + " ".join(lessons_list)
             self._collection.add(
                 ids=[entry_id],
-                documents=[task],         # ← 只对 task 做 embedding
+                documents=[doc_text],         # ← embed task + lessons combined
                 metadatas=[meta],
             )
         except Exception:
@@ -104,7 +108,10 @@ class EmbeddingMemoryStore:
             pass
 
     def query(self, task: str, n: int = 5) -> list[dict]:
-        """纯 embedding 检索 — 只按 task 语义相似度，不做任何 key 过滤。
+        """纯 embedding 检索 — 按 task+lessons 语义相似度，带 software 过滤。
+        
+        优先返回匹配当前 software 的经验，同时包含少量其他 software 的
+        高相关结果（跨软件学习）。
 
         Returns:
             list of entry dicts with 'task', 'lessons', 'result', 'software' keys.
@@ -118,7 +125,7 @@ class EmbeddingMemoryStore:
             count = self._collection.count()
             if count == 0:
                 return []
-            n_fetch = min(n, count)
+            n_fetch = min(n * 2, count)  # 多取一些做 software 过滤
             results = self._collection.query(
                 query_texts=[task],
                 n_results=n_fetch,
@@ -130,11 +137,12 @@ class EmbeddingMemoryStore:
         metadatas = results.get("metadatas", [[]])[0] or []
         docs = results.get("documents", [[]])[0] or []
 
-        entries = []
+        # 分离：同 software 优先，其他 software 补充
+        same_sw: list[dict] = []
+        other_sw: list[dict] = []
         for i, meta in enumerate(metadatas):
             if meta is None:
                 continue
-            # 还原 lessons
             lessons = []
             if "lessons_json" in meta:
                 try:
@@ -147,7 +155,15 @@ class EmbeddingMemoryStore:
                 "result": meta.get("result", ""),
                 "software": meta.get("software", self._software),
             }
-            entries.append(entry)
+            if entry["software"] == self._software:
+                same_sw.append(entry)
+            else:
+                other_sw.append(entry)
+
+        # 同 software 优先，不够再用其他软件补充
+        entries = same_sw[:n]
+        if len(entries) < n:
+            entries.extend(other_sw[:n - len(entries)])
 
         return entries
 

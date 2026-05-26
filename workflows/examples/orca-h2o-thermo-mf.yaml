@@ -31,7 +31,6 @@ description: >
   H2O thermochemistry: geometry input → DFT geometry optimization → frequency analysis.
   Uses ORCA 6.1 with B3LYP/def2-SVP. freq node directly outputs Gibbs free
   energy, enthalpy, ZPE, and a machine-readable thermochemistry report.
-namespace: miqroforge-v2
 
 global_params: {}
 

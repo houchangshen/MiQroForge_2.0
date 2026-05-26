@@ -3,7 +3,6 @@
 mf_version: "1.0"
 name: e2e-dft-fanout
 description: "DFT fan-out: H2O → orca-dft (B3LYP), gaussian-dft (PBE0), psi4-dft (B3LYP)"
-namespace: miqroforge-v2
 
 global_params: {}
 

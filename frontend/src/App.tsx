@@ -20,6 +20,7 @@ import { ProjectGallery } from './pages/ProjectGallery'
 import { NodeRepository } from './pages/NodeRepository'
 import { NodeFilesPage } from './pages/NodeFilesPage'
 import { MemoryManager } from './pages/MemoryManager'
+import { AdminUsagePage } from './pages/AdminUsagePage'
 import { useUIStore } from './stores/ui-store'
 import { useRunOverlayStore } from './stores/run-overlay-store'
 import { useAgentStore } from './stores/agent-store'
@@ -185,6 +186,9 @@ function AppRoutes() {
       <Route path="/node-repository/preference" element={<ProtectedRoute><NodeRepository /></ProtectedRoute>} />
       <Route path="/node-repository/nodefiles" element={<ProtectedRoute><NodeFilesPage /></ProtectedRoute>} />
       <Route path="/memory" element={<ProtectedRoute><MemoryManager /></ProtectedRoute>} />
+      <Route path="/admin/usage" element={
+        <ProtectedRoute><AdminUsagePage /></ProtectedRoute>
+      } />
     </Routes>
   )
 }

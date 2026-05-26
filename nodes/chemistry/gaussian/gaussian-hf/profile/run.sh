@@ -54,12 +54,12 @@ cat "${WORKDIR}/input.gjf"
 
 cd "$WORKDIR"
 echo "[gaussian-hf] Running Gaussian..."
-if ! g16 < input.gjf > output.log 2>&1; then
+g16 < input.gjf > output.log 2>&1 || {
     ec=$?
     echo "[gaussian-hf][ERROR] g16 exited with ${ec}; dumping output.log tail:" >&2
     tail -n 200 output.log >&2 || true
     exit "${ec}"
-fi
+}
 echo "[gaussian-hf] Gaussian finished. Parsing output..."
 
 ENERGY=$(grep "SCF Done" output.log | tail -1 | awk '{print $5}' || echo "")

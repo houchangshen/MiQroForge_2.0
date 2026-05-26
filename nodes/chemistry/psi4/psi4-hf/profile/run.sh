@@ -61,12 +61,12 @@ cat "${WORKDIR}/input.py"
 # ── 运行 Psi4 ─────────────────────────────────────────────────────────────────
 cd "$WORKDIR"
 echo "[psi4-hf] Running Psi4..."
-if ! psi4 input.py > output.log 2>&1; then
+psi4 input.py > output.log 2>&1 || {
     ec=$?
     echo "[psi4-hf][ERROR] psi4 exited with ${ec}; dumping output.log tail:" >&2
     tail -n 200 output.log >&2 || true
     exit "${ec}"
-fi
+}
 echo "[psi4-hf] Psi4 finished. Parsing output..."
 
 # ── 解析输出 ──────────────────────────────────────────────────────────────────

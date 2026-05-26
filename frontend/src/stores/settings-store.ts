@@ -1,7 +1,20 @@
 import { create } from 'zustand'
 
-export type Theme = 'light' | 'dark'
+export type Theme = 'light' | 'dark' | 'forest' | 'ocean' | 'sunset' | 'midnight'
 export type FontSize = 'small' | 'medium' | 'large'
+
+/** Themes that are dark (used for ReactFlow colorMode and minimap maskColor) */
+export const DARK_THEMES: ReadonlySet<Theme> = new Set(['dark', 'midnight'])
+
+/** Get ReactFlow compatible colorMode ('light' | 'dark') for any theme */
+export function getColorMode(theme: Theme): 'light' | 'dark' {
+  return DARK_THEMES.has(theme) ? 'dark' : 'light'
+}
+
+/** Get minimap maskColor string for any theme */
+export function getMinimapMaskColor(theme: Theme): string {
+  return DARK_THEMES.has(theme) ? 'rgba(0,0,0,0.4)' : 'rgba(200,190,170,0.3)'
+}
 
 interface SettingsState {
   theme: Theme
@@ -28,7 +41,21 @@ function loadInitial(): { theme: Theme; fontSize: FontSize } {
 }
 
 function applyTheme(theme: Theme) {
-  document.documentElement.classList.toggle('dark', theme === 'dark')
+  // Remove all theme-related classes first
+  document.documentElement.classList.remove(
+    'dark',
+    'theme-forest',
+    'theme-ocean',
+    'theme-sunset',
+    'theme-midnight'
+  )
+  // Apply the new theme class
+  if (theme === 'dark') {
+    document.documentElement.classList.add('dark')
+  } else if (theme !== 'light') {
+    // light is the default (:root CSS), no class needed
+    document.documentElement.classList.add(`theme-${theme}`)
+  }
 }
 
 function applyFontSize(fontSize: FontSize) {

@@ -251,6 +251,7 @@ def generate_prefab_node(state: PrefabGenState) -> dict[str, Any]:
             env_overrides[str(k)] = str(v)
 
     # ── 构建工具 ──
+    _call_state: dict[str, str] = {}
     projects_root = state.get("_projects_root", "")
     tools = build_all_tools(
         software=software,
@@ -262,6 +263,7 @@ def generate_prefab_node(state: PrefabGenState) -> dict[str, Any]:
         input_ports=state.get("_input_ports") or [],
         output_ports=state.get("_output_ports") or [],
         projects_root=projects_root,
+        call_state=_call_state,
     )
 
     # ── 构建 prompt ──
@@ -411,8 +413,14 @@ def generate_prefab_node(state: PrefabGenState) -> dict[str, Any]:
                     sandbox_call_count += 1
                     if sandbox_call_count > max_sandbox_calls:
                         tool_result = json.dumps({
-                            "error": f"Sandbox call limit reached ({max_sandbox_calls}/{max_sandbox_calls}). "
-                                     "Finalize your work — check the last sandbox result and stop.",
+                            "error": (
+                                f"Sandbox limit reached ({max_sandbox_calls}/{max_sandbox_calls}). "
+                                "No more testing allowed. You MUST stop now:\n"
+                                "1. If you discovered a recurring issue or important trap during testing, "
+                                "consider calling record_lesson(lesson_text) to save it for future runs.\n"
+                                "2. Write a brief summary of what you tried and what went wrong, then STOP. "
+                                "Do NOT attempt any more tool calls — the round will end."
+                            ),
                         }, ensure_ascii=False)
                         messages.append(ToolMessage(
                             content=str(tool_result),
@@ -420,8 +428,39 @@ def generate_prefab_node(state: PrefabGenState) -> dict[str, Any]:
                         ))
                         continue
 
+                # 沙箱已达上限时禁止修改文件（Agent 应直接收尾）
+                if sandbox_call_count > max_sandbox_calls and tool_name in ("write_file", "update_file"):
+                    tool_result = json.dumps({
+                        "error": (
+                            f"Sandbox limit reached — no more file modifications allowed. "
+                            "If you learned something useful, consider calling record_lesson(). "
+                            "Write a brief summary of what you tried and what went wrong, then STOP."
+                        ),
+                    }, ensure_ascii=False)
+                    messages.append(ToolMessage(
+                        content=str(tool_result),
+                        tool_call_id=tool_id,
+                    ))
+                    continue
+
                 # 找到对应工具并执行
                 tool_result = _execute_tool(tools, tool_name, tool_args)
+
+                # 最后一次沙箱测试：注入提示，告知 Agent 这是最后一次
+                if tool_name == "test_in_sandbox" and sandbox_call_count == max_sandbox_calls:
+                    try:
+                        rd = json.loads(tool_result) if isinstance(tool_result, str) else tool_result
+                        rd["_last_attempt"] = True
+                        rd["message"] = (
+                            f"THIS IS YOUR LAST TEST ({sandbox_call_count}/{max_sandbox_calls}). "
+                            "Run check_sandbox to see results. "
+                            "If test PASSED → verify outputs and stop. "
+                            "If test FAILED → you may call record_lesson() if you learned something useful, "
+                            "then write a brief summary and STOP. No more testing."
+                        )
+                        tool_result = json.dumps(rd, ensure_ascii=False)
+                    except Exception:
+                        pass
 
                 # 检测 terminate 信号
                 if tool_name == "terminate":
@@ -611,6 +650,7 @@ def generate_prefab_node(state: PrefabGenState) -> dict[str, Any]:
             "_terminated": _terminated,
             "_terminate_reason": _terminate_reason,
             "_internal_errors": _internal_errors,
+            "_recorded_lesson": _call_state.get("_recorded_lesson", ""),
         }
 
     except Exception as e:
@@ -634,4 +674,5 @@ def generate_prefab_node(state: PrefabGenState) -> dict[str, Any]:
             "_terminated": _terminated,
             "_terminate_reason": _terminate_reason,
             "_internal_errors": _internal_errors,
+            "_recorded_lesson": _call_state.get("_recorded_lesson", ""),
         }

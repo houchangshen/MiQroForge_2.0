@@ -16,7 +16,6 @@ from typing import Any
 
 from agents.node_generator.shared.sandbox_base import (
     create_sandbox_dir,
-    cleanup_sandbox_dir,
     _scan_output_files,
     _ensure_docker,
     save_pip_history,
@@ -38,82 +37,77 @@ def _execute_in_docker(
     sandbox_dir: Path | None = None,
 ) -> dict[str, Any]:
     """在 Docker 容器内执行脚本。"""
-    own_dir = sandbox_dir is None
-    if own_dir:
-        sandbox_dir = create_sandbox_dir()
+    if sandbox_dir is None:
+        raise ValueError("sandbox_dir is required — caller must provide a user-scoped sandbox directory")
 
+    input_dir = sandbox_dir / "input"
+    output_dir = sandbox_dir / "output"
+    workspace_dir = sandbox_dir / "workspace"
+
+    # 写入输入数据
+    if input_data:
+        for port_name, content in input_data.items():
+            port_file = input_dir / port_name
+            port_file.write_text(content, encoding="utf-8")
+
+    # 写入脚本
+    script_path = sandbox_dir / "_script.py"
+    script_path.write_text(script, encoding="utf-8")
+
+    # 环境变量
+    env = os.environ.copy()
+    if env_overrides:
+        env.update(env_overrides)
+
+    cmd = [
+        "docker", "run", "--rm",
+        "-v", f"{sandbox_dir}:/sandbox",
+        "-v", f"{input_dir}:/mf/input",
+        "-v", f"{output_dir}:/mf/output",
+        "-v", f"{workspace_dir}:/mf/workspace",
+        "-e", "MF_INPUT_DIR=/mf/input",
+        "-e", "MF_OUTPUT_DIR=/mf/output",
+        "-e", "MF_WORKSPACE_DIR=/mf/workspace",
+    ]
+    # 传递额外环境变量
+    for k, v in (env_overrides or {}).items():
+        cmd.extend(["-e", f"{k}={v}"])
+
+    cmd.extend([_EPHEMERAL_IMAGE, "python", "/sandbox/_script.py"])
+
+    timed_out = False
     try:
-        input_dir = sandbox_dir / "input"
-        output_dir = sandbox_dir / "output"
-        workspace_dir = sandbox_dir / "workspace"
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            cwd=str(sandbox_dir),
+            env=env,
+        )
+        stdout = result.stdout
+        stderr = result.stderr
+        return_code = result.returncode
+    except subprocess.TimeoutExpired as e:
+        stdout = e.stdout.decode() if isinstance(e.stdout, bytes) else (e.stdout or "")
+        stderr = (
+            e.stderr.decode() if isinstance(e.stderr, bytes) else (e.stderr or "")
+        ) + "\n[TIMEOUT]"
+        return_code = -1
+        timed_out = True
 
-        # 写入输入数据
-        if input_data:
-            for port_name, content in input_data.items():
-                port_file = input_dir / port_name
-                port_file.write_text(content, encoding="utf-8")
+    # 检测生成的文件
+    generated_files, image_files = _scan_output_files(output_dir, workspace_dir)
 
-        # 写入脚本
-        script_path = sandbox_dir / "_script.py"
-        script_path.write_text(script, encoding="utf-8")
-
-        # 环境变量
-        env = os.environ.copy()
-        if env_overrides:
-            env.update(env_overrides)
-
-        cmd = [
-            "docker", "run", "--rm",
-            "-v", f"{sandbox_dir}:/sandbox",
-            "-v", f"{input_dir}:/mf/input",
-            "-v", f"{output_dir}:/mf/output",
-            "-v", f"{workspace_dir}:/mf/workspace",
-            "-e", "MF_INPUT_DIR=/mf/input",
-            "-e", "MF_OUTPUT_DIR=/mf/output",
-            "-e", "MF_WORKSPACE_DIR=/mf/workspace",
-        ]
-        # 传递额外环境变量
-        for k, v in (env_overrides or {}).items():
-            cmd.extend(["-e", f"{k}={v}"])
-
-        cmd.extend([_EPHEMERAL_IMAGE, "python", "/sandbox/_script.py"])
-
-        timed_out = False
-        try:
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=timeout,
-                cwd=str(sandbox_dir),
-                env=env,
-            )
-            stdout = result.stdout
-            stderr = result.stderr
-            return_code = result.returncode
-        except subprocess.TimeoutExpired as e:
-            stdout = e.stdout.decode() if isinstance(e.stdout, bytes) else (e.stdout or "")
-            stderr = (
-                e.stderr.decode() if isinstance(e.stderr, bytes) else (e.stderr or "")
-            ) + "\n[TIMEOUT]"
-            return_code = -1
-            timed_out = True
-
-        # 检测生成的文件
-        generated_files, image_files = _scan_output_files(output_dir, workspace_dir)
-
-        return {
-            "stdout": stdout,
-            "stderr": stderr,
-            "return_code": return_code,
-            "timed_out": timed_out,
-            "generated_files": generated_files,
-            "image_files": image_files,
-            "sandbox_dir": str(sandbox_dir),
-        }
-    finally:
-        if own_dir:
-            cleanup_sandbox_dir(sandbox_dir)
+    return {
+        "stdout": stdout,
+        "stderr": stderr,
+        "return_code": return_code,
+        "timed_out": timed_out,
+        "generated_files": generated_files,
+        "image_files": image_files,
+        "sandbox_dir": str(sandbox_dir),
+    }
 
 
 def _docker_pip_install(package: str) -> dict[str, Any]:

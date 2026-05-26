@@ -118,6 +118,7 @@ def generate_ephemeral_node(state: EphemeralGenState) -> dict[str, Any]:
     sandbox_dir = create_sandbox_dir(
         project_id=state.get("_project_id"),
         run_name=state.get("_run_name"),
+        projects_dir=state.get("_projects_dir"),
     )
     sandbox_tool = make_sandbox_tool(input_data, env_overrides, sandbox_dir=sandbox_dir)
     pip_tool, pip_history = make_pip_install_tool()

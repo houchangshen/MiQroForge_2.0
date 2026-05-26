@@ -35,34 +35,46 @@ providers:
 # ─── 模型注册表 ──────────────────────────────────────────────────────────────
 #
 # 每个条目：
-#   model_id:     API 实际接受的 model 名称（必填）
-#   provider:     引用上面 providers 中的名称（必填）
-#   base_url:     覆盖 provider.base_url（可选，用于模型级代理切换）
-#   api_key:      覆盖 provider.api_key（可选）
-#   extra_params: 额外参数，透传到 LLM 构造器（可选）
-#                 - openai provider  → ChatOpenAI(extra_body={...})，绕过 SDK 校验
-#                 - anthropic provider → ChatAnthropic(**{...})
+#   model_id:                  API 实际接受的 model 名称（必填）
+#   provider:                  引用上面 providers 中的名称（必填）
+#   base_url:                  覆盖 provider.base_url（可选，用于模型级代理切换）
+#   api_key:                   覆盖 provider.api_key（可选）
+#   extra_params:              额外参数，透传到 LLM 构造器（可选）
+#                              - openai provider  → ChatOpenAI(extra_body={...})，绕过 SDK 校验
+#                              - anthropic provider → ChatAnthropic(**{...})
+#   input_price_per_1m:         LLM 输入价格（每 1M tokens，用于成本估算）
+#   output_price_per_1m:        LLM 输出价格（每 1M tokens，用于成本估算）
 #
 models:
   opus:
     model_id: claude-opus-4-7
     provider: anthropic
+    input_price_per_1m: 15.0
+    output_price_per_1m: 75.0
 
   sonnet:
     model_id: claude-sonnet-4-6
     provider: anthropic
+    input_price_per_1m: 3.0
+    output_price_per_1m: 15.0
 
   gemini:
     model_id: gemini-3.1-pro-preview
     provider: openai-proxy
+    input_price_per_1m: 1.25
+    output_price_per_1m: 5.0
 
   glm:
     model_id: glm-5.1
     provider: openai-proxy
+    input_price_per_1m: 1.0
+    output_price_per_1m: 4.0
 
   deepseek:
     model_id: deepseek-v4-pro
     provider: deepseek
+    input_price_per_1m: 1.0
+    output_price_per_1m: 4.0
     # DeepSeek v4-pro thinking 模式（思考链可见）
     extra_params:
       thinking: true
@@ -70,11 +82,20 @@ models:
   flash:
     model_id: deepseek-v4-flash
     provider: deepseek
+    input_price_per_1m: 0.5
+    output_price_per_1m: 2.0
 
   # 本地 Ollama 示例
   # local-qwen:
   #   model_id: qwen2.5:32b
   #   provider: ollama-local
+  #   input_price_per_1m: 0       # 本地模型免费
+
+# ─── 默认 LLM 定价（未在 models 中明确标价的模型使用此定价）───────────────
+default_pricing:
+  currency: USD
+  llm_input_per_1m: 1.0
+  llm_output_per_1m: 4.0
 
 # 默认模型（agents 未单独指定时使用）
 default_model: deepseek
@@ -90,3 +111,4 @@ agents:
   yaml_coder: glm             # MF YAML 生成（代码质量优先）
   node_generator: opus        # 节点生成（代码 + 推理）
   node_explorer: flash        # 探索子 Agent（速度优先，上下文隔离后用快速模型）
+  memory_curator: flash       # 记忆管理 Agent（低成本即可）

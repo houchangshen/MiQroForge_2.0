@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Package, BookOpen, Ruler, ExternalLink, Settings, Trash2, Brain, X, FolderOpen, LogOut, User } from 'lucide-react'
+import { Plus, Package, BookOpen, Ruler, ExternalLink, Settings, Trash2, Brain, X, FolderOpen, LogOut, User, Shield } from 'lucide-react'
 import { getStoredUser, clearToken } from '../lib/auth'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, rectSortingStrategy, arrayMove } from '@dnd-kit/sortable'
@@ -321,6 +321,14 @@ export function ProjectGallery() {
         >
           <Brain size={14} /> Memory
         </a>
+        {storedUser?.role === 'admin' && (
+          <a
+            href="/admin/usage"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-yellow-400 hover:text-yellow-300 border border-yellow-600/40 rounded-md hover:bg-yellow-900/20 transition-colors"
+          >
+            <Shield size={14} /> Admin
+          </a>
+        )}
         <NodeRepoDropdown />
         <button
           onClick={() => setSettingsOpen(true)}

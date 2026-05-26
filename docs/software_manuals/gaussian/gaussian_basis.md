@@ -131,7 +131,7 @@ Note: `Def2SVPP` corresponds to "def2-SV(P)" in the literature.
 The `Gen` keyword allows specifying a custom basis set in an additional input section. `GenECP` allows specifying both basis set and ECP together.
 
 ```
-# HF/Gen
+\# HF/Gen
 
 Title
 
@@ -173,7 +173,7 @@ Density fitting expands the density in atom-centered functions for Coulomb inter
 ### Syntax
 
 ```
-# BLYP/TZVP/TZVPFit
+\# BLYP/TZVP/TZVPFit
 ```
 
 Slashes must separate method, basis set, and fitting set.

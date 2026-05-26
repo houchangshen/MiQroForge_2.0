@@ -11,17 +11,17 @@ The `ONIOM` keyword requests a two- or three-layer ONIOM calculation. The molecu
 Layers are specified in the route section as options to the ONIOM keyword, separated by colons:
 
 ```
-# ONIOM(High:Low)                  # 2-layer
-# ONIOM(High:Medium:Low)           # 3-layer
+\# ONIOM(High:Low)                  # 2-layer
+\# ONIOM(High:Medium:Low)           # 3-layer
 ```
 
 ### Examples
 
 ```
-# ONIOM(B3LYP/6-31G(d,p):UFF)         # DFT high, UFF low
-# ONIOM(HF/6-31G(d):PM6:UFF)          # HF high, PM6 medium, UFF low
-# ONIOM(MP2/6-31G(d):HF/STO-3G)       # MP2 high, HF low
-# ONIOM(BLYP/6-31G(d)/Auto:UFF)       # With density fitting
+\# ONIOM(B3LYP/6-31G(d,p):UFF)         # DFT high, UFF low
+\# ONIOM(HF/6-31G(d):PM6:UFF)          # HF high, PM6 medium, UFF low
+\# ONIOM(MP2/6-31G(d):HF/STO-3G)       # MP2 high, HF low
+\# ONIOM(BLYP/6-31G(d)/Auto:UFF)       # With density fitting
 ```
 
 ## Molecule Specification
@@ -73,7 +73,7 @@ For a 3-layer calculation, up to three scale factors (low, medium, high). Settin
 ### Simple 2-Layer ONIOM
 
 ```
-# ONIOM(B3LYP/6-31G(d,p):UFF) Opt
+\# ONIOM(B3LYP/6-31G(d,p):UFF) Opt
 
 2-layer ONIOM optimization
 
@@ -91,7 +91,7 @@ For a 3-layer calculation, up to three scale factors (low, medium, high). Settin
 ### With Amber Force Field
 
 ```
-# ONIOM(B3LYP/6-31G(d):Amber) Geom=Connectivity
+\# ONIOM(B3LYP/6-31G(d):Amber) Geom=Connectivity
 
 2 layer ONIOM job
 
@@ -218,7 +218,7 @@ ONIOM=OnlyInputFiles   # Print only, don't run
 
 ```
 %Chk=oniom.chk
-# ONIOM(B3LYP/6-31G(d):UFF) Opt
+\# ONIOM(B3LYP/6-31G(d):UFF) Opt
 
 2-layer ONIOM optimization
 
@@ -234,7 +234,7 @@ ONIOM=OnlyInputFiles   # Print only, don't run
 
 ```
 %Chk=mychk
-# ONIOM(BLYP/3-21G:UFF) Opt Freq Guess=Input
+\# ONIOM(BLYP/3-21G:UFF) Opt Freq Guess=Input
 
 ONIOM Opt Freq
 
@@ -247,9 +247,9 @@ highmod.chk    Checkpoint file for Guess=Input
 ### Complete ONIOM Workflow
 
 ```
-# Step 1: Mechanical embedding optimization
+\# Step 1: Mechanical embedding optimization
 %Chk=step1.chk
-# ONIOM(B3LYP/6-31G(d):UFF) Opt
+\# ONIOM(B3LYP/6-31G(d):UFF) Opt
 
 Title
 
@@ -257,10 +257,10 @@ Title
 [coordinates]
 
 --Link1--
-# Step 2: Electronic embedding optimization
+\# Step 2: Electronic embedding optimization
 %OldChk=step1.chk
 %Chk=step2.chk
-# ONIOM(B3LYP/6-31G(d):UFF) Opt=(QuadMac,TS,CalcFC) EmbedCharge
+\# ONIOM(B3LYP/6-31G(d):UFF) Opt=(QuadMac,TS,CalcFC) EmbedCharge
 
 Title
 
@@ -268,9 +268,9 @@ Title
 [coordinates]
 
 --Link1--
-# Step 3: Frequency at final geometry
+\# Step 3: Frequency at final geometry
 %OldChk=step2.chk
-# ONIOM(B3LYP/6-31G(d):UFF) Freq EmbedCharge Geom=Check Guess=Read
+\# ONIOM(B3LYP/6-31G(d):UFF) Freq EmbedCharge Geom=Check Guess=Read
 
 Title
 

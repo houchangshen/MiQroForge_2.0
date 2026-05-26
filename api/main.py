@@ -26,7 +26,7 @@ from api.config import get_settings
 from api.routers import nodes, runs, workflows
 from api.routers import files
 from api.routers import agents
-from api.routers import auth, usage
+from api.routers import admin, auth, usage
 from api.routers import projects
 
 logger = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ _serve_static = FRONTEND_DIST.exists()
 def _sync_argo_ttl() -> None:
     """启动时同步 TTL 策略到 Argo workflow-controller ConfigMap（best-effort）。"""
     settings = get_settings()
-    ns = settings.argo_namespace
+    ns = "argo"  # Argo controller ConfigMap 始终在 argo namespace 中
     ttl_success = settings.argo_ttl_success_seconds
     ttl_failure = settings.argo_ttl_failure_seconds
 
@@ -124,6 +124,7 @@ app.include_router(agents.router, prefix=API_PREFIX)
 app.include_router(projects.router, prefix=API_PREFIX)
 app.include_router(auth.router, prefix=API_PREFIX)
 app.include_router(usage.router, prefix=API_PREFIX)
+app.include_router(admin.router, prefix=API_PREFIX)
 from api.routers import memory
 app.include_router(memory.router, prefix=API_PREFIX)
 

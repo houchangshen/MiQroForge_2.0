@@ -28,7 +28,6 @@ description: >
   H2O dual-branch frequency analysis: geometry input splits into
   (1) geo-opt → freq and (2) direct freq on the initial geometry.
   Uses ORCA 6.1 with B3LYP/STO-3G. Rebuilt from untitled-workflow-grrsr.
-namespace: miqroforge-v2
 
 global_params: {}
 

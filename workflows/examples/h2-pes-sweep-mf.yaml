@@ -4,7 +4,6 @@ description: >-  # H₂ 分子势能曲线扫描：不同 H-H 距离下的单点
   使用 ORCA B3LYP/def2-SVP-D3BJ 对 H₂ 分子在不同 H-H 距离下进行单点能计算，
   通过 withParam 扫描多个距离值（12 个点），最终收集能量绘制势能曲线。
   需要先在 workspace 放置 h2_*.xyz 几何文件。
-namespace: miqroforge-v2
 
 nodes:
   # 几何输入节点：通过 {{item}} 读取不同距离的 xyz 文件

@@ -45,6 +45,25 @@ from api.tracking.llm_tracker import TokenUsageTracker
 router = APIRouter(prefix="/agents", tags=["agents"])
 
 
+def _load_currency(settings) -> str:
+    """从 compute_pricing.yaml 读取币种，fallback 到 models.yaml。"""
+    import yaml
+    cp = settings.shared_root / "compute_pricing.yaml"
+    if cp.exists():
+        with cp.open("r", encoding="utf-8") as f:
+            cfg = yaml.safe_load(f) or {}
+            if cfg.get("currency"):
+                return str(cfg["currency"])
+    mp = settings.shared_root / "models.yaml"
+    if mp.exists():
+        with mp.open("r", encoding="utf-8") as f:
+            cfg = yaml.safe_load(f) or {}
+            defaults = cfg.get("default_pricing", {})
+            if defaults.get("currency"):
+                return str(defaults["currency"])
+    return "USD"
+
+
 # ─── Planner Agent ────────────────────────────────────────────────────────────
 
 @router.post("/plan", response_model=PlanResponse, summary="运行 Planner Agent")
@@ -60,7 +79,7 @@ async def plan_workflow(
         from agents.llm_config import LLMConfig
         from api.tracking.llm_tracker import TokenUsageTracker
 
-        tracker = TokenUsageTracker(paths, purpose="planner")
+        tracker = TokenUsageTracker(paths, purpose="planner", currency=_load_currency(settings))
 
         # 前端未传 session_id 时，服务端自动生成（确保日志总能被保存）
         effective_session_id = (
@@ -89,7 +108,7 @@ async def plan_workflow(
                         save_agent_log(
                             log.to_dict(),
                             session_id=effective_session_id,
-                            userdata_root=paths.agent_sessions_dir.parent.parent,
+                            userdata_root=paths.agent_sessions_dir.parent,
                         )
                     except Exception:
                         pass
@@ -128,7 +147,7 @@ async def generate_yaml(
     """将语义工作流翻译为可执行的 MF YAML。"""
     try:
         from agents.yaml_coder.graph import run_yaml_coder
-        tracker = TokenUsageTracker(paths, purpose="yaml_coder")
+        tracker = TokenUsageTracker(paths, purpose="yaml_coder", currency=_load_currency(settings))
 
         effective_session_id = (
             request.session_id
@@ -156,12 +175,14 @@ async def generate_yaml(
                         save_agent_log(
                             log.to_dict(),
                             session_id=effective_session_id,
-                            userdata_root=paths.agent_sessions_dir.parent.parent,
+                            userdata_root=paths.agent_sessions_dir.parent,
                         )
                     except Exception:
                         pass
 
         state = await asyncio.to_thread(_run_with_session)
+        tracker.flush()
+        LLMConfig.clear_token_tracker()
 
         result = state.get("result")
         mf_yaml = state.get("mf_yaml", "")
@@ -233,12 +254,12 @@ async def generate_node(
         prefab_cfg = _load_prefab_settings()
         mf_test_design = prefab_cfg.get("mf_test", False)
 
-        tracker2 = TokenUsageTracker(paths, purpose="node_generator")
+        tracker2 = TokenUsageTracker(paths, purpose="node_generator", currency=_load_currency(settings))
 
         def _run_with_session():
             nonlocal last_state, last_error
             LLMConfig.set_token_tracker(tracker2)
-            start_session("node_generator_design", {
+            start_session("prefab_design", {
                 "semantic_type": request.semantic_type,
                 "target_software": request.target_software,
                 "category": request.category,
@@ -474,7 +495,7 @@ def _resolve_nodegen_spec(
 
     # 2. 搜索 proj/tmp/
     if project_id:
-        tmp_spec = project_root / "userdata" / "projects" / project_id / "tmp" / node_name / "nodespec.yaml"
+        tmp_spec = userdata_root / "projects" / project_id / "tmp" / node_name / "nodespec.yaml"
         result = _read_all(tmp_spec)
         if result:
             return result
@@ -579,6 +600,7 @@ async def run_node_runtime(
         sandbox_result = None
         eval_issues: list[str] = []
         _internal_errors: list[str] = []
+        _recorded_lesson: str = ""          # 跨轮次累积 record_lesson 输出
         profile_files: dict[str, str] = {}
 
         # ── prefab_node_id: 从 proj/tmp/ 或 userdata/nodes/ 读取预生成 nodespec ──
@@ -587,7 +609,7 @@ async def run_node_runtime(
                 node_name=request.prefab_node_id,
                 project_id=request.project_id,
                 project_root=settings.project_root,
-                userdata_root=paths.agent_sessions_dir.parent.parent,
+                userdata_root=paths.agent_sessions_dir.parent,
             )
             if resolved:
                 nodespec_yaml, run_sh, profile_files = resolved
@@ -600,11 +622,11 @@ async def run_node_runtime(
         _exec_sandbox_dirs: list[str] = []
         _collected_outputs: dict[str, str] = {}
 
-        tracker3 = TokenUsageTracker(paths, purpose="node_generator")
+        tracker3 = TokenUsageTracker(paths, purpose="node_generator", currency=_load_currency(settings))
 
         def _run_with_session():
             nonlocal evaluation, last_state, last_error
-            nonlocal nodespec_yaml, run_sh, sandbox_result, eval_issues, _internal_errors, profile_files
+            nonlocal nodespec_yaml, run_sh, sandbox_result, eval_issues, _internal_errors, _recorded_lesson, profile_files
             nonlocal _sandbox_dir, _exec_sandbox_dirs, _collected_outputs
             LLMConfig.set_token_tracker(tracker3)
 
@@ -628,7 +650,7 @@ async def run_node_runtime(
 
             for outer_round in range(max_outer):
                 # --- Generate (含 ReAct Agent 内循环 + sandbox) ---
-                start_session("node_generator_runtime", {
+                start_session("prefab_runtime", {
                     "semantic_type": request.semantic_type,
                     "target_software": request.target_software,
                     "category": request.category,
@@ -687,11 +709,12 @@ async def run_node_runtime(
                                 run_log_dir.mkdir(parents=True, exist_ok=True)
                                 time_str = datetime.now().strftime("%H-%M-%S")
                                 agent_type = log_dict.get("agent_type", "unknown")
-                                json_path = run_log_dir / f"{agent_type}_r{outer_round}_{time_str}.json"
+                                node_id = request.prefab_node_id or "unknown"
+                                json_path = run_log_dir / f"{agent_type}_r{outer_round}_{node_id}_{time_str}.json"
                                 json_path.write_text(json.dumps(log_dict, indent=2, ensure_ascii=False, default=str))
                                 # 同步保存人类可读 .txt 文件
                                 from agents.common.session_logger import format_log_as_text
-                                txt_path = run_log_dir / f"{agent_type}_r{outer_round}_{time_str}.txt"
+                                txt_path = run_log_dir / f"{agent_type}_r{outer_round}_{node_id}_{time_str}.txt"
                                 txt_path.write_text(format_log_as_text(log_dict), encoding="utf-8")
                         except Exception:
                             pass
@@ -716,6 +739,10 @@ async def run_node_runtime(
                     if err not in _internal_errors:
                         _internal_errors.append(err)
 
+                # 收集 record_lesson 输出（跨轮次累积，保留首个非空值）
+                if not _recorded_lesson:
+                    _recorded_lesson = state.get("_recorded_lesson", "")
+
                 # terminate 信号：Agent 判定计算不科学，跳过 evaluator 直接结束
                 if state.get("_terminated"):
                     evaluation = EvaluationResult(
@@ -728,7 +755,7 @@ async def run_node_runtime(
                     break
 
                 # --- 评估 ---
-                start_session("node_generator_eval", {
+                start_session("prefab_eval", {
                     "semantic_type": request.semantic_type,
                     "target_software": request.target_software,
                     "iteration": outer_round,
@@ -778,11 +805,13 @@ async def run_node_runtime(
                                 )
                                 run_log_dir.mkdir(parents=True, exist_ok=True)
                                 time_str = datetime.now().strftime("%H-%M-%S")
-                                json_path = run_log_dir / f"node_eval_r{outer_round}_{time_str}.json"
+                                agent_type = log_dict.get("agent_type", "unknown")
+                                node_id = request.prefab_node_id or "unknown"
+                                json_path = run_log_dir / f"{agent_type}_r{outer_round}_{node_id}_{time_str}.json"
                                 json_path.write_text(json.dumps(log_dict, indent=2, ensure_ascii=False, default=str))
                                 # 同步保存人类可读 .txt 文件
                                 from agents.common.session_logger import format_log_as_text
-                                txt_path = run_log_dir / f"node_eval_r{outer_round}_{time_str}.txt"
+                                txt_path = run_log_dir / f"{agent_type}_r{outer_round}_{node_id}_{time_str}.txt"
                                 txt_path.write_text(format_log_as_text(log_dict), encoding="utf-8")
                         except Exception:
                             pass
@@ -861,54 +890,107 @@ async def run_node_runtime(
                     except Exception:
                         pass
 
-        # ── 保存经验到 Memory 系统 ──
-        try:
-            # 收集所有经验教训
-            all_lessons: list[str] = list(_internal_errors) if _internal_errors else []
-            if evaluation:
-                if evaluation.issues:
-                    all_lessons.extend(evaluation.issues)
-                if evaluation.suggestions:
-                    all_lessons.extend(evaluation.suggestions)
+        # ── 管理 Agent 记录的经验（record_lesson 工具输出，跨轮次累积）──
+        if _recorded_lesson:
+            print(f"[Memory Curator] Starting review of lesson: {_recorded_lesson[:80]}...", flush=True)
+            try:
+                import json as _json_local, re as _re_local
+                from agents.llm_config import LLMConfig as _LLMCfg
+                from agents.node_generator.shared.memory import (
+                    get_experience_store as _get_store,
+                    build_experience_entry as _build_entry,
+                )
 
-            if all_lessons or evaluation:
-                # 提取 software 名
-                software_name = request.target_software or ""
-                if not software_name and nodespec_yaml:
+                sw_name = request.target_software or ""
+                if not sw_name and nodespec_yaml:
                     try:
-                        import yaml as _y
-                        spec = _y.safe_load(nodespec_yaml)
-                        software_name = (
-                            spec.get("metadata", {}).get("tags", {}).get("software", "")
-                        ) or ""
+                        import yaml as _y_local
+                        spec = _y_local.safe_load(nodespec_yaml)
+                        sw_name = (spec.get("metadata", {}).get("tags", {}).get("software", "")) or ""
                     except Exception:
                         pass
-                if not software_name:
-                    software_name = "general"
+                if not sw_name:
+                    sw_name = "general"
 
-                sandbox_ok = (
-                    sandbox_result.get("test_passed", False)
-                    if sandbox_result else False
-                )
-                final_passed = (evaluation and evaluation.passed) if evaluation else False
-                result = "success" if (final_passed and sandbox_ok) else "failure"
+                store = _get_store(sw_name)
+                existing = store.query(task=request.description or "", n=5)
+                existing_text = "\n".join(
+                    f"- [{e.get('result','?')}] {e.get('task','')[:80]}: {'; '.join(e.get('lessons',[]))}"
+                    for e in existing
+                ) or "(no existing memories)"
 
-                from agents.node_generator.shared.memory import (
-                    get_experience_store,
-                    build_experience_entry,
+                msgs = (last_state or {}).get("messages_history", [])
+                from langchain_core.messages import AIMessage as _AIMsg
+                ai_msgs = [m for m in msgs if isinstance(m, _AIMsg)]
+                context = "\n---\n".join(
+                    (m.content or "")[:400] for m in ai_msgs[-3:]
+                ) if ai_msgs else "(no context)"
+
+                curator = _LLMCfg.get_chat_model(purpose="memory_curator", temperature=0.0)
+                from agents.common.prompt_loader import load_prompt as _load_prompt
+                prompt = _load_prompt(
+                    "subagent/memory_curator/prompts/curator.jinja2",
+                    lesson=_recorded_lesson,
+                    software=sw_name,
+                    existing=existing_text,
+                    context=context,
                 )
-                store = get_experience_store(software_name)
-                entry = build_experience_entry(
-                    task=request.description or "",
-                    software=software_name,
-                    result=result,
-                    lessons=all_lessons[:10],
-                )
-                store.add(entry)
-        except Exception:
-            import traceback as _tb
-            _sw = locals().get('software_name', 'unknown')
-            print(f"[Memory] Failed to save experience for '{_sw}': {_tb.format_exc()}", flush=True)
+                resp = curator.invoke(prompt)
+                content = resp.content if hasattr(resp, 'content') else str(resp)
+                try:
+                    m = _re_local.search(r'\{[^}]+\}', content)
+                    decision = _json_local.loads(m.group()) if m else _json_local.loads(content)
+                except Exception:
+                    decision = {"action": "add", "modified_lesson": _recorded_lesson}
+
+                action = decision.get("action", "add")
+                if action in ("add", "modify"):
+                    lesson = decision.get("modified_lesson", _recorded_lesson)[:200]
+                    entry = _build_entry(
+                        task=request.description or "",
+                        software=sw_name,
+                        result="failure",
+                        lessons=[lesson],
+                    )
+                    store.add(entry)
+                    print(f"[Memory Curator] {action} for '{sw_name}': {lesson[:80]}", flush=True)
+                else:
+                    print(f"[Memory Curator] Skipped for '{sw_name}'. decision={_json_local.dumps(decision, ensure_ascii=False)}", flush=True)
+
+                # ── 保存 curator 决策日志 ──
+                try:
+                    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+                    curator_log = {
+                        "timestamp": timestamp,
+                        "action": action,
+                        "proposed_lesson": _recorded_lesson,
+                        "curator_decision": decision,
+                        "software": sw_name,
+                    }
+                    log_dir = paths.projects_dir / request.project_id / "tmp"
+                    log_dir.mkdir(parents=True, exist_ok=True)
+                    (log_dir / f"curator_{timestamp}.json").write_text(
+                        _json_local.dumps(curator_log, indent=2, ensure_ascii=False),
+                        encoding="utf-8",
+                    )
+                except Exception:
+                    pass
+            except Exception as e:
+                print(f"[Memory Curator] Failed: {e}. Fallback save.", flush=True)
+                try:
+                    from agents.node_generator.shared.memory import (
+                        get_experience_store as _fb_store,
+                        build_experience_entry as _fb_entry,
+                    )
+                    s = _fb_store(request.target_software or "general")
+                    s.add(_fb_entry(
+                        task=request.description or "",
+                        software=request.target_software or "general",
+                        result="failure",
+                        lessons=[_recorded_lesson[:200]],
+                    ))
+                except Exception:
+                    pass
 
         # 保存到 run 目录
         saved_path = None
@@ -1103,7 +1185,7 @@ async def ephemeral_generate(
         evaluation = None
         sandbox_dirs: list[str] = []
 
-        tracker4 = TokenUsageTracker(paths, purpose="ephemeral")
+        tracker4 = TokenUsageTracker(paths, purpose="ephemeral", currency=_load_currency(settings))
 
         def _run_with_session():
             nonlocal script, exec_stdout, exec_stderr, exec_return_code
@@ -1113,7 +1195,7 @@ async def ephemeral_generate(
             try:
                 for outer_round in range(max_outer):
                     # --- Generate (含内循环 agent + sandbox) ---
-                    start_session("node_generator_ephemeral", {
+                    start_session("ephemeral_gen", {
                         "description": request.description,
                         "ports": request.ports,
                         "outer_round": outer_round,
@@ -1125,6 +1207,7 @@ async def ephemeral_generate(
                             gen_request,
                             _input_data=request.input_data,
                             _project_id=request.project_id,
+                            _projects_dir=str(paths.projects_dir),
                             _run_name=request.run_name,
                             iteration=outer_round,
                             script=script,
@@ -1145,11 +1228,12 @@ async def ephemeral_generate(
                                     run_log_dir.mkdir(parents=True, exist_ok=True)
                                     time_str = datetime.now().strftime("%H-%M-%S")
                                     agent_type = log_dict.get("agent_type", "unknown")
-                                    json_path = run_log_dir / f"{agent_type}_gen_r{outer_round}_{time_str}.json"
+                                    node_id = request.context.get("node_id", "unknown") if request.context else "unknown"
+                                    json_path = run_log_dir / f"{agent_type}_r{outer_round}_{node_id}_{time_str}.json"
                                     json_path.write_text(json.dumps(log_dict, indent=2, ensure_ascii=False, default=str))
                                     # 同步保存人类可读 .txt 文件
                                     from agents.common.session_logger import format_log_as_text
-                                    txt_path = run_log_dir / f"{agent_type}_gen_r{outer_round}_{time_str}.txt"
+                                    txt_path = run_log_dir / f"{agent_type}_r{outer_round}_{node_id}_{time_str}.txt"
                                     txt_path.write_text(format_log_as_text(log_dict), encoding="utf-8")
                             except Exception:
                                 pass
@@ -1172,7 +1256,7 @@ async def ephemeral_generate(
                         continue
 
                     # --- 执行成功 → 评估 ---
-                    start_session("ephemeral_evaluator", {
+                    start_session("ephemeral_eval", {
                         "description": request.description,
                         "ports": request.ports,
                         "outer_round": outer_round,
@@ -1205,11 +1289,13 @@ async def ephemeral_generate(
                                     )
                                     run_log_dir.mkdir(parents=True, exist_ok=True)
                                     time_str = datetime.now().strftime("%H-%M-%S")
-                                    json_path = run_log_dir / f"ephemeral_eval_r{outer_round}_{time_str}.json"
+                                    agent_type = log_dict.get("agent_type", "unknown")
+                                    node_id = request.context.get("node_id", "unknown") if request.context else "unknown"
+                                    json_path = run_log_dir / f"{agent_type}_r{outer_round}_{node_id}_{time_str}.json"
                                     json_path.write_text(json.dumps(log_dict, indent=2, ensure_ascii=False, default=str))
                                     # 同步保存人类可读 .txt 文件
                                     from agents.common.session_logger import format_log_as_text
-                                    txt_path = run_log_dir / f"ephemeral_eval_r{outer_round}_{time_str}.txt"
+                                    txt_path = run_log_dir / f"{agent_type}_r{outer_round}_{node_id}_{time_str}.txt"
                                     txt_path.write_text(format_log_as_text(log_dict), encoding="utf-8")
                             except Exception:
                                 pass
@@ -1314,11 +1400,11 @@ async def ephemeral_evaluate(
                 tmp_image_paths.append(img_path)
             state["image_files"] = tmp_image_paths
 
-        tracker5 = TokenUsageTracker(paths, purpose="ephemeral_evaluator")
+        tracker5 = TokenUsageTracker(paths, purpose="ephemeral_evaluator", currency=_load_currency(settings))
 
         def _run_eval():
             LLMConfig.set_token_tracker(tracker5)
-            start_session("ephemeral_evaluator", {
+            start_session("ephemeral_eval", {
                 "description": request.description,
                 "ports": request.ports,
                 "image_count": len(request.image_base64_list),
@@ -1339,11 +1425,12 @@ async def ephemeral_evaluate(
                             )
                             run_log_dir.mkdir(parents=True, exist_ok=True)
                             time_str = datetime.now().strftime("%H-%M-%S")
-                            json_path = run_log_dir / f"ephemeral_evaluator_{time_str}.json"
+                            agent_type = log_dict.get("agent_type", "unknown")
+                            json_path = run_log_dir / f"{agent_type}_{time_str}.json"
                             json_path.write_text(json.dumps(log_dict, indent=2, ensure_ascii=False, default=str))
                             # 同步保存人类可读 .txt 文件
                             from agents.common.session_logger import format_log_as_text
-                            txt_path = run_log_dir / f"ephemeral_evaluator_{time_str}.txt"
+                            txt_path = run_log_dir / f"{agent_type}_{time_str}.txt"
                             txt_path.write_text(format_log_as_text(log_dict), encoding="utf-8")
                     except Exception:
                         pass
@@ -1391,7 +1478,7 @@ async def save_session(
             save_conversation,
             messages=request.messages,
             session_id=request.session_id,
-            userdata_root=paths.agent_sessions_dir.parent.parent,
+            userdata_root=paths.agent_sessions_dir.parent,
         )
         return SaveSessionResponse(
             saved=True,

@@ -11,7 +11,7 @@ The `NMR` keyword predicts NMR shielding tensors and magnetic susceptibilities u
 Gauge-Independent Atomic Orbital method. Uses atomic orbitals that depend on the magnetic field, making results independent of gauge origin.
 
 ```
-# B3LYP/6-31G(d) NMR
+\# B3LYP/6-31G(d) NMR
 ```
 
 This is the recommended method and the default.
@@ -21,7 +21,7 @@ This is the recommended method and the default.
 Continuous Set of Gauge Transformations. Uses a continuous set of gauge origins. Requires large basis sets for accurate results.
 
 ```
-# B3LYP/6-31G(d) NMR=CSGT
+\# B3LYP/6-31G(d) NMR=CSGT
 ```
 
 ### IGAIM
@@ -29,7 +29,7 @@ Continuous Set of Gauge Transformations. Uses a continuous set of gauge origins.
 Individual Gauges for Atoms In Molecules. Uses atomic centers as gauge origins. Slight variation on CSGT.
 
 ```
-# B3LYP/6-31G(d) NMR=IGAIM
+\# B3LYP/6-31G(d) NMR=IGAIM
 ```
 
 ### SingleOrigin
@@ -37,7 +37,7 @@ Individual Gauges for Atoms In Molecules. Uses atomic centers as gauge origins. 
 Uses a single gauge origin. Not generally recommended, provided for comparison only.
 
 ```
-# B3LYP/6-31G(d) NMR=SingleOrigin
+\# B3LYP/6-31G(d) NMR=SingleOrigin
 ```
 
 ### All Methods
@@ -45,7 +45,7 @@ Uses a single gauge origin. Not generally recommended, provided for comparison o
 Compute properties with all three methods (SingleOrigin, IGAIM, CSGT):
 
 ```
-# B3LYP/6-31G(d) NMR=All
+\# B3LYP/6-31G(d) NMR=All
 ```
 
 ## Output Format
@@ -86,7 +86,7 @@ Common references (TMS for ¹H and ¹³C):
 Compute spin-spin coupling constants in addition to shielding:
 
 ```
-# B3LYP/6-31G(d) NMR=SpinSpin
+\# B3LYP/6-31G(d) NMR=SpinSpin
 ```
 
 **Cost**: About twice that of computing vibrational frequencies alone. Available only for HF and DFT.
@@ -96,7 +96,7 @@ Compute spin-spin coupling constants in addition to shielding:
 Two-step calculation for improved accuracy:
 
 ```
-# B3LYP/6-311+G(d,p) NMR=(SpinSpin,Mixed)
+\# B3LYP/6-311+G(d,p) NMR=(SpinSpin,Mixed)
 ```
 
 Step 1: Modified basis for Fermi Contact term (uncontracted + tight polarization)
@@ -133,7 +133,7 @@ The four contributions to spin-spin coupling:
 Calculate spin-spin coupling only for selected atoms:
 
 ```
-# B3LYP/6-31G(d) NMR=(SpinSpin,ReadAtoms)
+\# B3LYP/6-31G(d) NMR=(SpinSpin,ReadAtoms)
 ```
 
 Input section format:
@@ -160,7 +160,7 @@ Bare integers without keyword are interpreted as atom numbers:
 Display eigenvectors of the shielding tensor for each atom:
 
 ```
-# B3LYP/6-31G(d) NMR=PrintEigenvectors
+\# B3LYP/6-31G(d) NMR=PrintEigenvectors
 ```
 
 ### FCOnly
@@ -168,7 +168,7 @@ Display eigenvectors of the shielding tensor for each atom:
 Compute only Fermi contact spin-spin terms:
 
 ```
-# B3LYP/6-31G(d) NMR=(SpinSpin,FCOnly)
+\# B3LYP/6-31G(d) NMR=(SpinSpin,FCOnly)
 ```
 
 ### ReadFC
@@ -176,7 +176,7 @@ Compute only Fermi contact spin-spin terms:
 Read Fermi contact terms from checkpoint, compute other terms:
 
 ```
-# B3LYP/6-31G(d) NMR=(SpinSpin,ReadFC)
+\# B3LYP/6-31G(d) NMR=(SpinSpin,ReadFC)
 ```
 
 ### Susceptibility
@@ -184,7 +184,7 @@ Read Fermi contact terms from checkpoint, compute other terms:
 Compute magnetic susceptibility in addition to shielding:
 
 ```
-# B3LYP/6-31G(d) NMR=Susceptibility
+\# B3LYP/6-31G(d) NMR=Susceptibility
 ```
 
 ## Availability
@@ -210,8 +210,8 @@ Compute magnetic susceptibility in addition to shielding:
 ### Workflow
 
 ```
-# Step 1: Optimize geometry
-# B3LYP/6-311+G(d,p) Opt Freq
+\# Step 1: Optimize geometry
+\# B3LYP/6-311+G(d,p) Opt Freq
 
 Title
 
@@ -219,18 +219,18 @@ Title
 [molecule]
 
 --Link1--
-# Step 2: NMR calculation
+\# Step 2: NMR calculation
 %OldChk=step1.chk
-# B3LYP/6-311+G(d,p) NMR Geom=Check Guess=Read
+\# B3LYP/6-311+G(d,p) NMR Geom=Check Guess=Read
 
 NMR shielding
 
 0 1
 
 --Link1--
-# Step 3: Coupling constants
+\# Step 3: Coupling constants
 %OldChk=step1.chk
-# B3LYP/6-311+G(d,p) NMR=(SpinSpin,Mixed) Geom=Check Guess=Read
+\# B3LYP/6-311+G(d,p) NMR=(SpinSpin,Mixed) Geom=Check Guess=Read
 
 NMR coupling constants
 

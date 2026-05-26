@@ -1292,10 +1292,52 @@ def make_terminate_tool() -> list:
 
 
 # ═══════════════════════════════════════════════════════════════════════════
+# 记忆工具
+# ═══════════════════════════════════════════════════════════════════════════
+
+def make_memory_tool(call_state: dict | None = None) -> list:
+    """创建 record_lesson 工具 — Agent 可将重要经验写入持久记忆。
+
+    闭包通过 mutable dict 回传经验文本给调用方（generator → API endpoint）。
+    仅允许调用一次，截断至 200 字符。
+    """
+    import json as _json
+    _call_state = call_state if call_state is not None else {}
+
+    @tool
+    def record_lesson(lesson_text: str) -> str:
+        """Record an important lesson learned during node generation.
+
+        Use ONCE per run — save it for the most impactful insight. Examples:
+        - Non-obvious input format rules (e.g. "Gaussian requires blank line after geometry")
+        - Software-specific invocation quirks (e.g. "Psi4 molecule block uses Bohr not Angstrom")
+        - Common failure patterns (e.g. "CP2K SCF fails with LSD, switch to GGA")
+
+        Args:
+            lesson_text: The lesson to record. Max 200 characters — will be truncated if longer.
+        """
+        if _call_state.get("_recorded_lesson"):
+            return _json.dumps({
+                "error": "Lesson already recorded. Only one lesson per run.",
+                "recorded": _call_state["_recorded_lesson"],
+            }, ensure_ascii=False)
+
+        lesson = lesson_text[:200]
+        _call_state["_recorded_lesson"] = lesson
+        return _json.dumps({
+            "recorded": True,
+            "lesson": lesson,
+            "chars": len(lesson),
+        }, ensure_ascii=False)
+
+    return [record_lesson]
+
+
+# ═══════════════════════════════════════════════════════════════════════════
 # Explore 子 Agent 工具（将研究任务委派给独立的快速模型子 Agent）
 # ═══════════════════════════════════════════════════════════════════════════
 
-def make_explore_tool(default_software: str, project_id: str = "") -> list:
+def make_explore_tool(default_software: str, project_id: str = "", projects_root: str = "") -> list:
     """创建 explore_manuals 工具——将研究任务委派给 Explore 子 Agent。
 
     父 Agent 调用此工具时，Explore 子 Agent 用快速模型独立搜索手册、
@@ -1304,6 +1346,7 @@ def make_explore_tool(default_software: str, project_id: str = "") -> list:
     """
     _software = default_software
     _project_id = project_id
+    _projects_root = projects_root
 
     @tool
     def research(question: str, avoid_directions: str = "") -> str:
@@ -1335,6 +1378,7 @@ def make_explore_tool(default_software: str, project_id: str = "") -> list:
             software=sw,
             avoid_directions=avoid_directions,
             project_id=_project_id,
+            projects_dir=_projects_root,
         )
 
     return [research]
@@ -1354,6 +1398,7 @@ def build_all_tools(
     input_ports: list[str] | None = None,
     output_ports: list[str] | None = None,
     projects_root: str = "",
+    call_state: dict | None = None,
 ) -> list:
     """构建工具列表，返回 LangChain tool 列表。
 
@@ -1370,13 +1415,15 @@ def build_all_tools(
     sandbox_enabled : bool
         是否启用沙箱工具。设计时为 False（无上游数据），运行时为 True。
     project_id : str | None
-        项目 ID，用于定位 workspace 目录。
+         项目 ID，用于定位 workspace 目录。
     input_ports : list[str] | None
-        Argo DAG 输入端口名列表（用于 port_mapping 工具描述）。
+         Argo DAG 输入端口名列表（用于 port_mapping 工具描述）。
     output_ports : list[str] | None
-        Argo DAG 输出端口名列表（用于 port_mapping 工具描述）。
+         Argo DAG 输出端口名列表（用于 port_mapping 工具描述）。
     projects_root : str
-        用户 projects 目录根路径（多用户场景）。
+         用户 projects 目录根路径（多用户场景）。
+    call_state : dict | None
+        可变字典，用于工具间回传状态（如 record_lesson 存储 _recorded_lesson）。
     """
     from agents.node_generator.shared.manual_index import get_manual_index, list_available_manuals
 
@@ -1401,7 +1448,7 @@ def build_all_tools(
     tools.extend(make_schema_tools())
 
     # Explore 子 Agent（1 个）— 研究任务委派给快速模型，返回摘要后丢弃上下文
-    tools.extend(make_explore_tool(default_software=software, project_id=project_id or ""))
+    tools.extend(make_explore_tool(default_software=software, project_id=project_id or "", projects_root=projects_root or ""))
 
     # Workspace（2 个）— 始终注册，无 project_id 时返回错误提示
     tools.extend(make_workspace_tools(project_id=project_id, projects_root=projects_root))
@@ -1418,5 +1465,9 @@ def build_all_tools(
 
     # 控制（1 个）— 始终可用
     tools.extend(make_terminate_tool())
+
+    # 记忆（1 个）— 运行时启用，Agent 记录关键经验
+    if sandbox_enabled and call_state is not None:
+        tools.extend(make_memory_tool(call_state))
 
     return tools

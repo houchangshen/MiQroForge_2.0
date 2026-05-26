@@ -44,6 +44,51 @@ class ChapterInfo:
     summary: str = ""        # 首段摘要
 
 
+def _merge_adjacent_sections(sections: list[Section]) -> list[Section]:
+    """合并相邻的标题相同或非常相似的 section。
+    
+    解决 ORCA 等 PDF 手册跨页切割导致的内容碎片化问题：
+    多个连续页面的标题都是 "ORCA Manual, Release 6.0" 时合并为一个 section。
+    """
+    if len(sections) <= 1:
+        return sections
+    
+    merged: list[Section] = []
+    current = sections[0]
+    
+    for next_sec in sections[1:]:
+        # 判断是否应该合并：标题完全相同，或忽略括号内差异后相同
+        curr_title = current.title.strip()
+        next_title = next_sec.title.strip()
+        
+        same = (
+            curr_title == next_title
+            or _normalize_title(curr_title) == _normalize_title(next_title)
+        )
+        
+        if same:
+            # 合并：扩展行范围，拼接内容
+            current.line_end = next_sec.line_end
+            current.content = current.content + "\n" + next_sec.content
+            # 保留更具体的 section_id
+            if next_sec.section_id > current.section_id:
+                current.section_id = next_sec.section_id
+        else:
+            merged.append(current)
+            current = next_sec
+    
+    merged.append(current)
+    return merged
+
+
+def _normalize_title(title: str) -> str:
+    """标准化标题用于比较：去括号内容、去多余空格、小写。"""
+    import re as _re
+    t = _re.sub(r'\([^)]*\)', '', title)  # 去掉括号内容
+    t = _re.sub(r'\s+', ' ', t).strip().lower()
+    return t
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 # Section 解析
 # ═══════════════════════════════════════════════════════════════════════════
@@ -156,6 +201,8 @@ def _parse_sections(content: str, filename: str) -> list[Section]:
                 line_end=end_line,
                 content=section_text,
             ))
+        # 合并相邻的相同/相似标题的 section（解决 ORCA PDF 跨页切割问题）
+        sections = _merge_adjacent_sections(sections)
     else:
         # 按 # Heading 分割
         # 预计算 code block 行号，用于跳过代码块内的伪标题
@@ -464,8 +511,13 @@ class ManualIndex:
             for s in sections
         ]
 
-    def search(self, query: str, top_k: int = 5) -> list[dict]:
-        """BM25 搜索，返回匹配的 section 片段。"""
+    def search(self, query: str, top_k: int = 5, min_rel_score: float = 0.2) -> list[dict]:
+        """BM25 搜索，返回匹配的 section 片段。
+        
+        增强：
+        - 分数归一化（top=1.0），过滤低于 min_rel_score 的结果
+        - 跨章节 MMR 去重：优先选择不同章节的结果
+        """
         self.build()
         if not self._bm25_retriever or not self._corpus:
             return []
@@ -481,34 +533,74 @@ class ManualIndex:
             query_tokens = bm25s.tokenize(
                 [query], stopwords="en", stemmer=stemmer
             )
+            # 检索更多候选（供 MMR 去重后选择）
+            fetch_k = min(top_k * 3, len(self._corpus))
             results, scores = self._bm25_retriever.retrieve(
-                query_tokens, k=min(top_k, len(self._corpus))
+                query_tokens, k=fetch_k
             )
         except Exception:
             return []
 
-        hits = []
+        # 构建候选列表
+        candidates: list[dict] = []
+        max_score = 0.0
         for idx, score in zip(results[0], scores[0]):
             if idx < 0 or idx >= len(self._corpus_meta):
                 continue
+            score_f = float(score)
+            if score_f > max_score:
+                max_score = score_f
             meta = self._corpus_meta[idx]
             corpus_text = self._corpus[idx]
-
-            # 提取 snippet（前 500 字符）
             snippet = corpus_text[:500]
             if len(corpus_text) > 500:
                 snippet += "..."
-
-            hits.append({
+            candidates.append({
                 "chapter": meta["chapter"],
                 "section_id": meta["section_id"],
                 "title": meta["title"],
                 "page": meta.get("page"),
                 "snippet": snippet,
-                "score": float(score),
+                "score": score_f,
             })
 
-        return hits
+        if not candidates:
+            return []
+
+        # 归一化分数并过滤低分
+        if max_score > 0:
+            candidates = [
+                c for c in candidates
+                if (c["score"] / max_score) >= min_rel_score
+            ]
+            for c in candidates:
+                c["score"] = round(c["score"] / max_score, 3)
+
+        if not candidates:
+            return []
+
+        # MMR 跨章节去重：首条始终是最高分，后续优先选不同章节
+        seen_chapters: set[str] = set()
+        hits: list[dict] = []
+        hits.append(candidates[0])
+        seen_chapters.add(candidates[0]["chapter"])
+
+        for c in candidates[1:]:
+            if c["chapter"] not in seen_chapters:
+                hits.append(c)
+                seen_chapters.add(c["chapter"])
+                if len(hits) >= top_k:
+                    break
+
+        # 如果去重后不够 top_k，用同章节的补充
+        if len(hits) < top_k:
+            for c in candidates[1:]:
+                if c not in hits:
+                    hits.append(c)
+                    if len(hits) >= top_k:
+                        break
+
+        return hits[:top_k]
 
     def get_section(self, chapter: str, section_id: str) -> dict:
         """返回指定 section 的完整内容。"""
@@ -574,15 +666,24 @@ _index_cache: dict[str, ManualIndex] = {}
 
 
 def list_available_manuals() -> list[str]:
-    """扫描 docs/software_manuals/ 下所有已有 BM25 索引的软件手册。"""
+    """扫描 docs/software_manuals/ 下所有可用软件手册。
+    
+    优先列出已有 BM25 缓存的，也包含有 .md 源文件但尚未构建索引的
+    （首次搜索时会 lazy-build）。
+    """
     project_root = Path(__file__).parent.parent.parent.parent
     manuals_root = project_root / "docs" / "software_manuals"
     if not manuals_root.exists():
         return []
-    return sorted(
-        d.name for d in manuals_root.iterdir()
-        if d.is_dir() and not d.name.startswith(".") and (d / ".bm25_index").exists()
-    )
+    available = []
+    for d in manuals_root.iterdir():
+        if not d.is_dir() or d.name.startswith("."):
+            continue
+        has_index = (d / ".bm25_index").exists()
+        has_md = bool(list(d.glob("*.md")))
+        if has_index or has_md:
+            available.append(d.name)
+    return sorted(available)
 
 
 def get_manual_index(software: str) -> ManualIndex | None:

@@ -13,7 +13,7 @@ The `SCRF` keyword requests a calculation in the presence of a solvent by placin
 The Polarizable Continuum Model using IEFPCM. Uses continuous surface charge formalism for smooth, robust reaction fields with continuous derivatives.
 
 ```
-# B3LYP/6-31G(d) SCRF=(PCM,Solvent=Water)
+\# B3LYP/6-31G(d) SCRF=(PCM,Solvent=Water)
 ```
 
 ### CPCM
@@ -21,7 +21,7 @@ The Polarizable Continuum Model using IEFPCM. Uses continuous surface charge for
 PCM using the polarizable conductor calculation model. Simpler than IEFPCM, often adequate.
 
 ```
-# B3LYP/6-31G(d) SCRF=(CPCM,Solvent=Water)
+\# B3LYP/6-31G(d) SCRF=(CPCM,Solvent=Water)
 ```
 
 ### SMD
@@ -29,7 +29,7 @@ PCM using the polarizable conductor calculation model. Simpler than IEFPCM, ofte
 Truhlar's SMD solvation model — **recommended for computing ΔG of solvation**. Performs IEFPCM calculation with special radii and non-electrostatic terms.
 
 ```
-# B3LYP/6-31G(d) SCRF=(SMD,Solvent=Water)
+\# B3LYP/6-31G(d) SCRF=(SMD,Solvent=Water)
 ```
 
 ### Onsager (Dipole)
@@ -37,7 +37,7 @@ Truhlar's SMD solvation model — **recommended for computing ΔG of solvation**
 Places solute in a spherical cavity. Requires solute radius and dielectric constant.
 
 ```
-# B3LYP/6-31G(d) SCRF=(Dipole,Solvent=Water)
+\# B3LYP/6-31G(d) SCRF=(Dipole,Solvent=Water)
 ```
 
 ### IPCM (Isodensity)
@@ -87,7 +87,7 @@ SCRF=(Solvent=DiMethylSulfoxide)
 For SMD, define a new solvent via PCM input section with SCRF=Read:
 
 ```
-# B3LYP/6-31G(d) 5D SCRF(SMD,Solvent=Generic,Read)
+\# B3LYP/6-31G(d) 5D SCRF(SMD,Solvent=Generic,Read)
 
 SMD with custom solvent
 
@@ -128,12 +128,12 @@ SCRF=(Solvent=Water,NonEquilibrium=Read)   # Read slow charges
 
 **Step 1**: Ground state optimization with `NonEquilibrium=Save`
 ```
-# B3LYP/6-31+G(d,p) Opt Freq SCRF=(Solvent=Ethanol,NonEquilibrium=Save)
+\# B3LYP/6-31+G(d,p) Opt Freq SCRF=(Solvent=Ethanol,NonEquilibrium=Save)
 ```
 
 **Step 2**: Vertical excitation reading saved data
 ```
-# B3LYP/6-31+G(d,p) TD=(NStates=6,Root=1) SCRF=(Solvent=Ethanol,NonEquilibrium=Read)
+\# B3LYP/6-31+G(d,p) TD=(NStates=6,Root=1) SCRF=(Solvent=Ethanol,NonEquilibrium=Read)
 ```
 
 ## External Iteration PCM
@@ -189,7 +189,7 @@ SCRF=(Solvent=Water,CorrectedLR)
 Additional PCM parameters go in a separate input section with `SCRF=Read`:
 
 ```
-# B3LYP/6-31G(d) 5D SCRF(Solvent=Ethanol,Read)
+\# B3LYP/6-31G(d) 5D SCRF(Solvent=Ethanol,Read)
 
 Title
 

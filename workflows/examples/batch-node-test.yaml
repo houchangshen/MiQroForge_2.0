@@ -1,0 +1,124 @@
+mf_version: '1.0'
+name: Fixed-Node-Batch-Test
+description: 'End-to-end test of all 17 Gaussian + Psi4 nodes with corrected error handling (|| pattern, minimal STO-3G/HF)'
+
+nodes:
+  # ── 输入节点 ──
+  - id: geom-input
+    node: geometry-file-input
+    onboard_params:
+      geometry_file: ""
+      inline_geometry: |
+        3
+        H2O molecule
+        O   0.000000   0.000000   0.117176
+        H   0.000000   0.756950  -0.468705
+        H   0.000000  -0.756950  -0.468705
+
+  # ── Gaussian (8) ──
+  - id: g16-single
+    node: gaussian-single-point
+    onboard_params: { charge: 0, multiplicity: 1, method: HF, basis_set: STO-3G }
+
+  - id: g16-hf
+    node: gaussian-hf
+    onboard_params: { charge: 0, multiplicity: 1, basis_set: STO-3G }
+
+  - id: g16-dft
+    node: gaussian-dft
+    onboard_params: { charge: 0, multiplicity: 1, method: HF, basis_set: STO-3G }
+
+  - id: g16-mp2
+    node: gaussian-mp2
+    onboard_params: { charge: 0, multiplicity: 1, method: HF, basis_set: STO-3G }
+
+  - id: g16-ccsd
+    node: gaussian-ccsd
+    onboard_params: { charge: 0, multiplicity: 1, method: HF, basis_set: STO-3G }
+
+  - id: g16-casscf
+    node: gaussian-casscf
+    onboard_params: { charge: 0, multiplicity: 1, method: HF, basis_set: STO-3G, active_electrons: 2, active_orbitals: 2 }
+
+  - id: g16-tddft
+    node: gaussian-tddft
+    onboard_params: { charge: 0, multiplicity: 1, method: HF, basis_set: STO-3G }
+
+  - id: g16-freq
+    node: gaussian-freq
+    onboard_params: { charge: 0, multiplicity: 1, method: HF, basis_set: STO-3G }
+
+  # ── Psi4 (9) ──
+  - id: p4-hf
+    node: psi4-hf
+    onboard_params: { charge: 0, multiplicity: 1, basis_set: STO-3G }
+
+  - id: p4-single
+    node: psi4-single-point
+    onboard_params: { charge: 0, multiplicity: 1, method: hf, basis_set: STO-3G }
+
+  - id: p4-dft
+    node: psi4-dft
+    onboard_params: { charge: 0, multiplicity: 1, method: hf, basis_set: STO-3G }
+
+  - id: p4-mp2
+    node: psi4-mp2
+    onboard_params: { charge: 0, multiplicity: 1, method: hf, basis_set: STO-3G }
+
+  - id: p4-ccsd
+    node: psi4-ccsd
+    onboard_params: { charge: 0, multiplicity: 1, method: hf, basis_set: STO-3G }
+
+  - id: p4-casci
+    node: psi4-casci
+    onboard_params: { charge: 0, multiplicity: 1, method: hf, basis_set: STO-3G, n_active_electrons: 2, n_active_orbitals: 2 }
+
+  - id: p4-tddft
+    node: psi4-tddft
+    onboard_params: { charge: 0, multiplicity: 1, method: hf, basis_set: STO-3G }
+
+  - id: p4-freq
+    node: psi4-freq
+    onboard_params: { charge: 0, multiplicity: 1, method: hf, basis_set: STO-3G }
+
+  - id: p4-geo
+    node: psi4-geo-opt
+    onboard_params: { charge: 0, multiplicity: 1, method: hf, basis_set: STO-3G }
+
+connections:
+  # Gaussian
+  - from: geom-input.xyz_geometry
+    to: g16-single.xyz_geometry
+  - from: geom-input.xyz_geometry
+    to: g16-hf.xyz_geometry
+  - from: geom-input.xyz_geometry
+    to: g16-dft.xyz_geometry
+  - from: geom-input.xyz_geometry
+    to: g16-mp2.xyz_geometry
+  - from: geom-input.xyz_geometry
+    to: g16-ccsd.xyz_geometry
+  - from: geom-input.xyz_geometry
+    to: g16-casscf.xyz_geometry
+  - from: geom-input.xyz_geometry
+    to: g16-tddft.xyz_geometry
+  - from: geom-input.xyz_geometry
+    to: g16-freq.xyz_geometry
+  # Psi4
+  - from: geom-input.xyz_geometry
+    to: p4-hf.xyz_geometry
+  - from: geom-input.xyz_geometry
+    to: p4-single.xyz_geometry
+  - from: geom-input.xyz_geometry
+    to: p4-dft.xyz_geometry
+  - from: geom-input.xyz_geometry
+    to: p4-mp2.xyz_geometry
+  - from: geom-input.xyz_geometry
+    to: p4-ccsd.xyz_geometry
+  - from: geom-input.xyz_geometry
+    to: p4-casci.xyz_geometry
+  - from: geom-input.xyz_geometry
+    to: p4-tddft.xyz_geometry
+  - from: geom-input.xyz_geometry
+    to: p4-freq.xyz_geometry
+  - from: geom-input.xyz_geometry
+    to: p4-geo.xyz_geometry

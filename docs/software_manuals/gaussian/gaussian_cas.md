@@ -231,7 +231,7 @@ NPairs=n
    in order to determine their symmetries and any alterations needed to
    produce the desired initial state. We include Pop=Reg to obtain the
    molecular orbital output in the population analysis section:
-# HF/3-21G Guess=Only Pop=Reg Test
+\# HF/3-21G Guess=Only Pop=Reg Test
    The molecule being investigated is 1,3-cyclobutadiene, a singlet with
    D[2h] symmetry. We are going to run a 4×4 CAS, so there will be four
    orbitals in the active space: 2 occupied and 2 virtual. We want all
@@ -276,7 +276,7 @@ Molecular Orbital Coefficients
    found our four necessary orbitals, and can now use Guess=Alter to move
    them into the active space. Here is the input file for the CASSCF
    calculation:
-   # CASSCF(4,4)/3-21G Guess=Alter Pop=Reg  Test
+\   # CASSCF(4,4)/3-21G Guess=Alter Pop=Reg  Test
    1,3-Cyclobutadiene Singlet, D2H, Pi 4×4 CAS
    0 1
    molecule specification
@@ -357,7 +357,7 @@ Final one electron symbolic density matrix:
    orbitals; it takes advantage of the initial guess computation done by
    that job, which is retrieved from the checkpoint file:
 %chk=CAS1
-# CASSCF(2,4) 6-31+G(D) Guess=(Read,Alter) Pop=NaturalOrbital Test
+\# CASSCF(2,4) 6-31+G(D) Guess=(Read,Alter) Pop=NaturalOrbital Test
 Geom=Check
 Alter the guess so that the three LUMOs are all the desired
 symmetry, and run the CAS
@@ -366,7 +366,7 @@ orbital alterations
 --Link1--
 %chk=CAS1
 %nosave
-# CASSCF(2,4,NRoot=2) 6-31+G(D) Guess(Read) Pop(NaturalOrbital) Geom=Check Test
+\# CASSCF(2,4,NRoot=2) 6-31+G(D) Guess(Read) Pop(NaturalOrbital) Geom=Check Test
 Excited state calculation
 0,1
    The second job step uses the NRoot option to CASSCF to specify the
@@ -426,7 +426,7 @@ Excited state calculation
    followed by its total magnitude, which in this case is 55.2016070
    cm^-1.
    RASSCF example. Here is an example RASSCF calculation route section:
-# CAS(16,18,RASSCF(1,2,3,4)) 6-31G(d)
+\# CAS(16,18,RASSCF(1,2,3,4)) 6-31G(d)
    If this molecule is a neutral singlet, then this route defines the
    following spaces: RAS1 with 2 orbitals, 3 or 4 electrons in all
    configurations; RAS2 with 12 orbitals, 12 electrons in the reference

@@ -15,7 +15,7 @@ Gaussian 16 input consists of a series of lines in an ASCII text file. The basic
 A simple single point energy calculation on water:
 
 ```
-# HF/6-31G(d)
+\# HF/6-31G(d)
 
 water energy
 
@@ -31,7 +31,7 @@ The route and title sections each consist of a single line. The molecule specifi
 
 ```
 %Chk=heavy
-# HF/6-31G(d) Opt=ModRedun
+\# HF/6-31G(d) Opt=ModRedun
 
 Opt job
 
@@ -133,12 +133,12 @@ The route section begins with `#` (or `#p` for verbose, `#t` for terse) and spec
 ### Route Section Format
 
 ```
-# [prefix] Method/BasisSet [Keywords...]
+\# [prefix] Method/BasisSet [Keywords...]
 ```
 
 Examples:
 ```
-# HF/6-31G(d) Opt Freq
+\# HF/6-31G(d) Opt Freq
 #p B3LYP/6-311+G(d,p) SCRF=(Solvent=Water) Pop=Full
 #t MP2/cc-pVTZ SP
 ```
@@ -149,7 +149,7 @@ Multiple Gaussian jobs can be combined in a single input file, separated by `--L
 
 ```
 %Chk=freq
-# HF/6-31G(d) Freq
+\# HF/6-31G(d) Freq
 
 Frequencies at STP
 
@@ -158,7 +158,7 @@ Molecule specification
 --Link1--
 %Chk=freq
 %NoSave
-# HF/6-31G(d) Geom=Check Guess=Read Freq=(ReadFC,ReadIsotopes)
+\# HF/6-31G(d) Geom=Check Guess=Read Freq=(ReadFC,ReadIsotopes)
 
 Frequencies at 300 K
 

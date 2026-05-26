@@ -27,7 +27,6 @@ description: >
   Cross-software thermochemistry: Psi4 geometry optimization → ORCA frequency
   analysis. Leverages Psi4's open-source license for optimization and ORCA's
   mature thermochemistry post-processing.
-namespace: miqroforge-v2
 
 global_params: {}
 

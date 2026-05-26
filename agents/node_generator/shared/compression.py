@@ -83,16 +83,17 @@ def _compress_old_messages(
 
     summary_prompt = f"""Summarize the following tool call history concisely. Preserve:
 1. What was tried and what worked/failed
-2. Key findings from manual chapters or reference nodes
+2. Key findings from manual chapters or reference nodes — INCLUDE chapter names, section IDs, and page numbers
 3. Current state of the generated nodespec/run.sh
 4. Any unresolved issues or errors
+5. Search trajectory — which chapters/sections were already searched (avoid re-searching)
 
 History:
 {history_str}
 
 Respond with a structured summary in this format:
 TRIED: [what approaches were attempted]
-FOUND: [key findings from tools]
+FOUND: [key findings with source references: chapter name, section ID, page]
 CURRENT_STATE: [current state of generated artifacts]
 ISSUES: [unresolved problems]"""
 

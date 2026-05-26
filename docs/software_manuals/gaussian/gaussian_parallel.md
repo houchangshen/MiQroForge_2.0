@@ -212,7 +212,7 @@ GPU memory is separate from CPU memory. Ensure sufficient GPU memory for the cal
 %NProcShared=8
 %Mem=16GB
 %Chk=water.chk
-# B3LYP/6-311+G(d,p) Opt Freq Pop=Full
+\# B3LYP/6-311+G(d,p) Opt Freq Pop=Full
 
 Water optimization and frequency
 
@@ -229,7 +229,7 @@ H  0.0  0.96  0.0
 %Mem=64GB
 %RWF=/local/scratch/rwf,100GB
 %Chk=large_mol.chk
-# B3LYP/6-31G(d) SCF=(InCore,MaxCycle=256) Opt=(CalcFC,MaxCycle=100)
+\# B3LYP/6-31G(d) SCF=(InCore,MaxCycle=256) Opt=(CalcFC,MaxCycle=100)
 
 Large molecule optimization
 
@@ -243,7 +243,7 @@ Large molecule optimization
 %NProcShared=8
 %Mem=32GB
 %Chk=step1.chk
-# B3LYP/6-31G(d) Opt Freq
+\# B3LYP/6-31G(d) Opt Freq
 
 Step 1: Optimize and frequencies
 
@@ -255,7 +255,7 @@ Step 1: Optimize and frequencies
 %Mem=32GB
 %OldChk=step1.chk
 %Chk=step2.chk
-# B3LYP/6-311+G(d,p) Geom=Check Guess=Read Pop=Full
+\# B3LYP/6-311+G(d,p) Geom=Check Guess=Read Pop=Full
 
 Step 2: Single point with larger basis
 

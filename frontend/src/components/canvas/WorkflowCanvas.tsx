@@ -25,7 +25,7 @@ import { agentsApi } from '../../api/agents-api'
 import { buildNodeData } from '../../lib/node-utils'
 import { semanticLabel } from '../../lib/semantic-labels'
 import type { PickerOption } from '../../lib/semantic-labels'
-import { useSettingsStore } from '../../stores/settings-store'
+import { useSettingsStore, getColorMode, getMinimapMaskColor } from '../../stores/settings-store'
 import { useShortcutsStore, keyMatch, displayKey } from '../../stores/shortcuts-store'
 
 const NODE_TYPES: NodeTypes = { mfNode: MFNode as NodeTypes[string] }
@@ -443,7 +443,7 @@ export function WorkflowCanvas() {
         selectionOnDrag
         panOnDrag={[1, 2]}
         panActivationKeyCode={null}
-        colorMode={theme}
+        colorMode={getColorMode(theme)}
       >
         <Background
           variant={BackgroundVariant.Dots}
@@ -454,7 +454,7 @@ export function WorkflowCanvas() {
         <Controls />
         <MiniMap
           nodeColor={minimapNodeColor}
-          maskColor={theme === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(200,190,170,0.3)'}
+          maskColor={getMinimapMaskColor(theme)}
         />
       </ReactFlow>
 

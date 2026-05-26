@@ -4,33 +4,93 @@
 
 @layer base {
   :root {
-    /* ── Light theme — warm cream/paper tones ─────────────────────────────── */
-    --mf-bg-base:   255 253 245;       /* warm white */
-    --mf-bg-panel:  250 247 235;       /* cream */
-    --mf-bg-card:   244 240 226;       /* slightly darker cream */
-    --mf-bg-input:  236 231 215;       /* warm input bg */
-    --mf-bg-hover:  228 222 203;       /* hover state */
-    --mf-bg-surface: 236 231 215;      /* inset/recessed — matches input bg */
-    --mf-text-primary:   45 36 25;     /* warm dark brown */
-    --mf-text-secondary: 100 87 70;    /* medium warm brown */
-    --mf-text-muted:     155 142 122;  /* light warm brown */
-    --mf-border:    205 196 175;       /* warm beige border */
-    --mf-canvas-bg: 238 234 220;       /* warm canvas background */
+    /* ── Light theme — cool-neutral slate, studio-grade white ──────────────── */
+    --mf-bg-base:   250 251 253;       /* cool white — subtle blue undertone */
+    --mf-bg-panel:  241 243 248;       /* muted cool gray panel */
+    --mf-bg-card:   233 236 242;       /* card — recessed from panel */
+    --mf-bg-input:  241 243 248;       /* input bg — matches panel */
+    --mf-bg-hover:  225 229 236;       /* hover — slightly deeper */
+    --mf-bg-surface: 233 236 242;      /* inset/recessed — matches card */
+    --mf-text-primary:   18 22 26;     /* near-black, crisp */
+    --mf-text-secondary: 78 84 94;     /* readable medium gray */
+    --mf-text-muted:     138 144 154;  /* subdued tertiary */
+    --mf-border:    208 213 221;       /* subtle cool border */
+    --mf-canvas-bg: 237 241 247;       /* canvas — distinctly grayer than base */
   }
 
   .dark {
-    /* ── Dark theme — values match existing hardcoded grays exactly ─────── */
-    --mf-bg-base:   3 7 18;            /* gray-950 */
-    --mf-bg-panel:  17 24 39;          /* gray-900 */
-    --mf-bg-card:   31 41 55;          /* gray-800 */
-    --mf-bg-input:  31 41 55;          /* gray-800 */
-    --mf-bg-hover:  55 65 81;          /* gray-700 */
-    --mf-bg-surface: 31 41 55;         /* inset/recessed — matches input bg (gray-800) */
-    --mf-text-primary:   243 244 246;  /* gray-100 */
-    --mf-text-secondary: 156 163 175;  /* gray-400 */
-    --mf-text-muted:     107 114 128;  /* gray-500 */
-    --mf-border:    55 65 81;          /* gray-700 */
-    --mf-canvas-bg: 3 7 18;            /* gray-950 */
+    /* ── Dark theme — deep blue-slate, VS Code Dark+ inspired ─────────────── */
+    --mf-bg-base:   15 17 26;          /* deepest slate */
+    --mf-bg-panel:  22 26 38;          /* panel — lifted from base */
+    --mf-bg-card:   32 38 52;          /* card — clear depth step */
+    --mf-bg-input:  32 38 52;          /* input — matches card */
+    --mf-bg-hover:  48 56 72;          /* hover — warm enough to feel responsive */
+    --mf-bg-surface: 26 32 44;         /* inset — between base and card */
+    --mf-text-primary:   227 232 242;  /* bright white-blue, easy on eyes */
+    --mf-text-secondary: 148 158 176;  /* readable mid-light */
+    --mf-text-muted:     96 108 128;   /* subdued but distinguishable */
+    --mf-border:    44 50 66;          /* subtle visible border */
+    --mf-canvas-bg: 8 10 18;           /* canvas — clearly deeper than base */
+  }
+
+  .theme-forest {
+    /* ── Forest theme — rich conifer greens, grounded & calm ──────────────── */
+    --mf-bg-base:   244 251 242;
+    --mf-bg-panel:  232 244 230;
+    --mf-bg-card:   218 234 212;
+    --mf-bg-input:  232 244 230;
+    --mf-bg-hover:  204 224 196;
+    --mf-bg-surface: 218 234 212;
+    --mf-text-primary:   20 44 28;
+    --mf-text-secondary: 68 102 73;
+    --mf-text-muted:     128 160 136;
+    --mf-border:    172 198 176;
+    --mf-canvas-bg: 222 238 218;
+  }
+
+  .theme-ocean {
+    /* ── Ocean theme — crisp marine blues, chart-like clarity ─────────────── */
+    --mf-bg-base:   244 250 255;
+    --mf-bg-panel:  232 243 252;
+    --mf-bg-card:   218 233 248;
+    --mf-bg-input:  232 243 252;
+    --mf-bg-hover:  206 226 244;
+    --mf-bg-surface: 218 233 248;
+    --mf-text-primary:   16 44 68;
+    --mf-text-secondary: 66 108 148;
+    --mf-text-muted:     125 162 195;
+    --mf-border:    176 210 235;
+    --mf-canvas-bg: 224 240 250;
+  }
+
+  .theme-sunset {
+    /* ── Sunset theme — warm terracotta amber, sophisticated dusk ──────────── */
+    --mf-bg-base:   253 248 243;
+    --mf-bg-panel:  245 236 226;
+    --mf-bg-card:   235 222 208;
+    --mf-bg-input:  245 236 226;
+    --mf-bg-hover:  225 208 192;
+    --mf-bg-surface: 235 222 208;
+    --mf-text-primary:   48 30 16;
+    --mf-text-secondary: 112 78 52;
+    --mf-text-muted:     165 132 105;
+    --mf-border:    206 190 168;
+    --mf-canvas-bg: 240 230 216;
+  }
+
+  .theme-midnight {
+    /* ── Midnight theme — deep navy indigo, observatory dark ───────────────── */
+    --mf-bg-base:   10 14 32;
+    --mf-bg-panel:  18 24 48;
+    --mf-bg-card:   28 36 62;
+    --mf-bg-input:  28 36 62;
+    --mf-bg-hover:  46 56 84;
+    --mf-bg-surface: 22 30 52;
+    --mf-text-primary:   226 232 246;
+    --mf-text-secondary: 148 162 202;
+    --mf-text-muted:     98 116 152;
+    --mf-border:    44 58 92;
+    --mf-canvas-bg: 5 8 20;
   }
 
   body {

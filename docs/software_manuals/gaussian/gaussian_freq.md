@@ -622,7 +622,7 @@ Sum of electronic and thermal Free Energies= -527.463147   G=H-TS
    spectrum:
 %OldChk=excited                      Excited state calculation.
 %Chk=fcht
-# Freq=(ReadFC,FCHT,ReadFCHT) Geom=AllCheck …
+\# Freq=(ReadFC,FCHT,ReadFCHT) Geom=AllCheck …
 TimeIndependent                      ReadFCHT additional input.
 Output=Matrix=JK                     Output Duschinsky matrix and shift vector.
      final blank line
@@ -695,7 +695,7 @@ tates).
    calculations.
 %Chk=S0_freq                                         Ground state checkpoint fil
 e.
-# Freq=(FC,ReadFC,ReadFCHT) Geom=AllCheck …
+\# Freq=(FC,ReadFC,ReadFCHT) Geom=AllCheck …
 TimeIndependent                                      ReadFCHT additional input.
 Spectroscopy=ResonanceRaman                          Predict resonance Raman spe
 ctrum.
@@ -771,13 +771,13 @@ states.
    calculation followed by a second thermochemistry analysis using a
    different temperature, pressure, and selection of isotopes:
 %Chk=freq
-# B3LYP/6-311+G(2d,p) Freq
+\# B3LYP/6-311+G(2d,p) Freq
 Frequencies at STP
 molecule specification
 -Link1-
 %Chk=freq
 %NoSave
-# B3LYP/6-311+G(2d,p) Freq(ReadIso,ReadFC) Geom=Check
+\# B3LYP/6-311+G(2d,p) Freq(ReadIso,ReadFC) Geom=Check
 Repeat at 300 K
 0,1
 300.0 1.0
@@ -1159,7 +1159,7 @@ Normal Modes
        value 14 says to only treat the first and fourth energy derivatives
        and to ignore the second and third energy derivatives.
    Here is an example calculation using DataMod=SkipPT2=OptModes:
-# Freq=(Anharm,ReadAnharm) …
+\# Freq=(Anharm,ReadAnharm) …
 Formaldehyde
 0 1
 
@@ -1201,7 +1201,7 @@ Specifying Resonances
 
    Example 1: Frequency data calculated in the current job:
 %Chk=example1
-# B3LYP/6-311+G(d,p) Freq=(Anharmonic,ReadAnharm)
+\# B3LYP/6-311+G(d,p) Freq=(Anharmonic,ReadAnharm)
 Anharmonic frequencies example 1
 molecule specification
 DataMod=SkipPT2=Modes            Freq=ReadAnharm additional input
@@ -1222,7 +1222,7 @@ Print=InDataX=Ext                Write data to an external file
    Hessian:
 %OldChk=example1
 %Chk=example2
-# B3LYP/6-311+G(d,p) Freq=(ReadFC,Anharmonic,ReadAnharm) Geom=Check
+\# B3LYP/6-311+G(d,p) Freq=(ReadFC,Anharmonic,ReadAnharm) Geom=Check
 Anharmonic frequencies example 2
 0 1
 PT2Model=GVPT2                    Freq=ReadAnharm additional input
@@ -1244,7 +1244,7 @@ RedDim=Inactive=1
                                   blank line
    Example 3: The following example specifies alternate values for several
    parameters:
-#  B3LYP/6-31G(d) Freq=(Anharm,ReadAnharm)
+\#  B3LYP/6-31G(d) Freq=(Anharm,ReadAnharm)
 Anharmonic frequencies example 3
 molecule specification
 Tolerances=Coriolis=0.25                Freq=ReadAnharm additional input
@@ -1253,7 +1253,7 @@ DataMod=SCHarm=0.98
                                         blank line
    Example 4: Anharmonic VCD and ROA spectra calculation:
 %Chk=project4
-# Freq=(ROA,VCD,Anharm,ReadAnharm) CPHF=RdFreq …
+\# Freq=(ROA,VCD,Anharm,ReadAnharm) CPHF=RdFreq …
 Anharmonic VCD and ROA spectrum
 0 1
 molecule specification
@@ -1611,7 +1611,7 @@ blank line
    Example 1. The following calculation performs a Franck-Condon frequency
    analysis for phenoxyl:
 %Chk=phenoxyls0.chk
-# Freq=(FC,ReadFC,ReadFCHT) Geom=Check …
+\# Freq=(FC,ReadFC,ReadFCHT) Geom=Check …
 Phenoxyl Frank-Condon analysis
 0 2
 Final=Source=Chk                ReadFCHT input: specify source for final state.
@@ -1626,7 +1626,7 @@ phenoxyls1.chk                  Checkpoint file for the final state.
    additional input section since Final=Source=Chk is the default for
    emission spectra.
 %Chk=initial
-# Freq=(FCHT,ReadFC,ReadFCHT) Geom=AllCheck …
+\# Freq=(FCHT,ReadFC,ReadFCHT) Geom=AllCheck …
 Transition=Absorption        ReadFCHT input.
 Spectroscopy=CD              Select spectrum to predict: ECD.
 final.chk                    Checkpoint file for the final state.
@@ -1634,13 +1634,13 @@ final.chk                    Checkpoint file for the final state.
    Example 3. The following job performs the analysis at 500 K, using the
    time-dependent framework.
 %Chk=temp500init
-# Freq=(FC,ReadFC,ReadFCHT,SaveNM) Geom=AllCheck …
+\# Freq=(FC,ReadFC,ReadFCHT,SaveNM) Geom=AllCheck …
 Temperature=Value=500.0 TimeDependent
 temp500final.chk
      terminal blank line
    Example 4. The following job computes the resonance Raman spectrum:
 %Chk=S0_freq
-# Freq=(FC,ReadFC,ReadFCHT) Geom=Check …
+\# Freq=(FC,ReadFC,ReadFCHT) Geom=Check …
 RR spectrum
 0 1
 Spectroscopy=RR                   ReadFCHT input: select spectrum to predict.
@@ -1655,20 +1655,20 @@ S2_freq.chk                      Checkpoint file for final state.
    Example 5. The final job step below computes the vibrational envelope
    of a photoionization spectrum:
 %chk=neutral     Calculation on the neutral form (initial state).
-# B3LYP/6-31+G(d,p) Freq=SaveNM
+\# B3LYP/6-31+G(d,p) Freq=SaveNM
 neutral form
 0 1
 molecule specification
 --Link1--
 %chk=cation      Calculation on the cation (final state).
-# B3LYP/6-31+G(d,p) Freq=SaveNM
+\# B3LYP/6-31+G(d,p) Freq=SaveNM
 cation
 1 2
 molecule specification
 --Link1--
 %oldchk=neutral  Data for the neutral form.
 %chk=fc
-# B3LYP/6-31+G(d,p) Freq=(FC,ReadFCHT) Geom=Check
+\# B3LYP/6-31+G(d,p) Freq=(FC,ReadFCHT) Geom=Check
 photoionization
 0,1
 Initial=Source=Calc Final=Source=Chk                      Retrieve final state f
@@ -2303,7 +2303,7 @@ Sum of electronic and thermal Free Energies= -527.463147   G=H-TS
    spectrum:
 %OldChk=excited                      Excited state calculation.
 %Chk=fcht
-# Freq=(ReadFC,FCHT,ReadFCHT) Geom=AllCheck …
+\# Freq=(ReadFC,FCHT,ReadFCHT) Geom=AllCheck …
 TimeIndependent                      ReadFCHT additional input.
 Output=Matrix=JK                     Output Duschinsky matrix and shift vector.
      final blank line
@@ -2376,7 +2376,7 @@ tates).
    calculations.
 %Chk=S0_freq                                         Ground state checkpoint fil
 e.
-# Freq=(FC,ReadFC,ReadFCHT) Geom=AllCheck …
+\# Freq=(FC,ReadFC,ReadFCHT) Geom=AllCheck …
 TimeIndependent                                      ReadFCHT additional input.
 Spectroscopy=ResonanceRaman                          Predict resonance Raman spe
 ctrum.
@@ -2452,13 +2452,13 @@ states.
    calculation followed by a second thermochemistry analysis using a
    different temperature, pressure, and selection of isotopes:
 %Chk=freq
-# B3LYP/6-311+G(2d,p) Freq
+\# B3LYP/6-311+G(2d,p) Freq
 Frequencies at STP
 molecule specification
 -Link1-
 %Chk=freq
 %NoSave
-# B3LYP/6-311+G(2d,p) Freq(ReadIso,ReadFC) Geom=Check
+\# B3LYP/6-311+G(2d,p) Freq(ReadIso,ReadFC) Geom=Check
 Repeat at 300 K
 0,1
 300.0 1.0
@@ -2838,7 +2838,7 @@ Normal Modes
        value 14 says to only treat the first and fourth energy derivatives
        and to ignore the second and third energy derivatives.
    Here is an example calculation using DataMod=SkipPT2=OptModes:
-# Freq=(Anharm,ReadAnharm) …
+\# Freq=(Anharm,ReadAnharm) …
 Formaldehyde
 0 1
 
@@ -2880,7 +2880,7 @@ Specifying Resonances
 
    Example 1: Frequency data calculated in the current job:
 %Chk=example1
-# B3LYP/6-311+G(d,p) Freq=(Anharmonic,ReadAnharm)
+\# B3LYP/6-311+G(d,p) Freq=(Anharmonic,ReadAnharm)
 Anharmonic frequencies example 1
 molecule specification
 DataMod=SkipPT2=Modes            Freq=ReadAnharm additional input
@@ -2901,7 +2901,7 @@ Print=InDataX=Ext                Write data to an external file
    Hessian:
 %OldChk=example1
 %Chk=example2
-# B3LYP/6-311+G(d,p) Freq=(ReadFC,Anharmonic,ReadAnharm) Geom=Check
+\# B3LYP/6-311+G(d,p) Freq=(ReadFC,Anharmonic,ReadAnharm) Geom=Check
 Anharmonic frequencies example 2
 0 1
 PT2Model=GVPT2                    Freq=ReadAnharm additional input
@@ -2923,7 +2923,7 @@ RedDim=Inactive=1
                                   blank line
    Example 3: The following example specifies alternate values for several
    parameters:
-#  B3LYP/6-31G(d) Freq=(Anharm,ReadAnharm)
+\#  B3LYP/6-31G(d) Freq=(Anharm,ReadAnharm)
 Anharmonic frequencies example 3
 molecule specification
 Tolerances=Coriolis=0.25                Freq=ReadAnharm additional input
@@ -2932,7 +2932,7 @@ DataMod=SCHarm=0.98
                                         blank line
    Example 4: Anharmonic VCD and ROA spectra calculation:
 %Chk=project4
-# Freq=(ROA,VCD,Anharm,ReadAnharm) CPHF=RdFreq …
+\# Freq=(ROA,VCD,Anharm,ReadAnharm) CPHF=RdFreq …
 Anharmonic VCD and ROA spectrum
 0 1
 molecule specification
@@ -3289,7 +3289,7 @@ blank line
    Example 1. The following calculation performs a Franck-Condon frequency
    analysis for phenoxyl:
 %Chk=phenoxyls0.chk
-# Freq=(FC,ReadFC,ReadFCHT) Geom=Check …
+\# Freq=(FC,ReadFC,ReadFCHT) Geom=Check …
 Phenoxyl Frank-Condon analysis
 0 2
 Final=Source=Chk                ReadFCHT input: specify source for final state.
@@ -3304,7 +3304,7 @@ phenoxyls1.chk                  Checkpoint file for the final state.
    additional input section since Final=Source=Chk is the default for
    emission spectra.
 %Chk=initial
-# Freq=(FCHT,ReadFC,ReadFCHT) Geom=AllCheck …
+\# Freq=(FCHT,ReadFC,ReadFCHT) Geom=AllCheck …
 Transition=Absorption        ReadFCHT input.
 Spectroscopy=CD              Select spectrum to predict: ECD.
 final.chk                    Checkpoint file for the final state.
@@ -3312,13 +3312,13 @@ final.chk                    Checkpoint file for the final state.
    Example 3. The following job performs the analysis at 500 K, using the
    time-dependent framework.
 %Chk=temp500init
-# Freq=(FC,ReadFC,ReadFCHT,SaveNM) Geom=AllCheck …
+\# Freq=(FC,ReadFC,ReadFCHT,SaveNM) Geom=AllCheck …
 Temperature=Value=500.0 TimeDependent
 temp500final.chk
      terminal blank line
    Example 4. The following job computes the resonance Raman spectrum:
 %Chk=S0_freq
-# Freq=(FC,ReadFC,ReadFCHT) Geom=Check …
+\# Freq=(FC,ReadFC,ReadFCHT) Geom=Check …
 RR spectrum
 0 1
 Spectroscopy=RR                   ReadFCHT input: select spectrum to predict.
@@ -3333,20 +3333,20 @@ S2_freq.chk                      Checkpoint file for final state.
    Example 5. The final job step below computes the vibrational envelope
    of a photoionization spectrum:
 %chk=neutral     Calculation on the neutral form (initial state).
-# B3LYP/6-31+G(d,p) Freq=SaveNM
+\# B3LYP/6-31+G(d,p) Freq=SaveNM
 neutral form
 0 1
 molecule specification
 --Link1--
 %chk=cation      Calculation on the cation (final state).
-# B3LYP/6-31+G(d,p) Freq=SaveNM
+\# B3LYP/6-31+G(d,p) Freq=SaveNM
 cation
 1 2
 molecule specification
 --Link1--
 %oldchk=neutral  Data for the neutral form.
 %chk=fc
-# B3LYP/6-31+G(d,p) Freq=(FC,ReadFCHT) Geom=Check
+\# B3LYP/6-31+G(d,p) Freq=(FC,ReadFCHT) Geom=Check
 photoionization
 0,1
 Initial=Source=Calc Final=Source=Chk                      Retrieve final state f

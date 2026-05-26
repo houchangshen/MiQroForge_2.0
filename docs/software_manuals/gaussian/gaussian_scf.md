@@ -193,10 +193,10 @@ While not part of the SCF keyword, initial guess options affect convergence:
 ### Typical SCF Options
 
 ```
-# B3LYP/6-31G(d) SCF=Tight           # Default, tight convergence
-# B3LYP/6-31G(d) SCF=QC              # Quadratically convergent
-# B3LYP/6-31G(d) SCF=(QC,MaxCycle=256)  # QC with more cycles
-# B3LYP/6-31G(d) SCF=Conventional    # Store integrals on disk
-# B3LYP/6-31G(d) SCF=InCore          # All integrals in memory
-# B3LYP/6-31G(d) SCF=NoVarAcc        # Full accuracy from start
+\# B3LYP/6-31G(d) SCF=Tight           # Default, tight convergence
+\# B3LYP/6-31G(d) SCF=QC              # Quadratically convergent
+\# B3LYP/6-31G(d) SCF=(QC,MaxCycle=256)  # QC with more cycles
+\# B3LYP/6-31G(d) SCF=Conventional    # Store integrals on disk
+\# B3LYP/6-31G(d) SCF=InCore          # All integrals in memory
+\# B3LYP/6-31G(d) SCF=NoVarAcc        # Full accuracy from start
 ```

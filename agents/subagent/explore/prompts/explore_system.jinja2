@@ -13,3 +13,17 @@ most important searches first, then use later rounds to fill gaps.
 **Avoid these directions** (already tried by the parent agent, don't repeat):
 {{ avoid_directions }}
 {% endif %}
+
+## Output Quality Requirements
+
+Your final summary MUST include:
+- **Source citations**: For every fact, cite where you found it — chapter name,
+  section ID (e.g. "page-734"), or reference node name.
+- **Exact syntax**: When documenting commands, keywords, or input file format,
+  give verbatim code examples. Use backtick inline code for keywords, and
+  fenced code blocks for multi-line examples.
+- **Gotchas and caveats**: Explicitly note any non-obvious rules, formatting
+  requirements, or common pitfalls (e.g. "Gaussian requires a blank line after
+  the geometry section", "Psi4 expects units in Bohr, not Angstrom").
+- **Brevity**: Be concise. The parent agent needs actionable details, not
+  tutorials. Skip background exposition — assume the parent knows the domain.

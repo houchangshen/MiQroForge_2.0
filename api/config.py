@@ -15,6 +15,28 @@ _root = Path(__file__).parent.parent
 load_dotenv(_root / ".env", override=False)
 
 
+def _detect_host_ip() -> str:
+    """检测本机对外 IP：连接 ARGO_SERVER_URL 以确定集群 Pod 可达的网络接口。"""
+    import socket
+    from urllib.parse import urlparse
+    argo_url = os.environ.get("ARGO_SERVER_URL", "")
+    if argo_url:
+        try:
+            host = urlparse(argo_url).hostname
+            if host:
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                try:
+                    s.settimeout(0.5)
+                    s.connect((host, 1))
+                    ip = s.getsockname()[0]
+                    return ip
+                finally:
+                    s.close()
+        except Exception:
+            pass
+    return ""
+
+
 class Settings:
     """从环境变量读取 API 配置（.env 文件已在模块加载时写入 os.environ）。"""
 
@@ -60,6 +82,22 @@ class Settings:
         # Docker Hub 国内镜像加速（可选）
         self.docker_hub_mirror: str = os.environ.get("DOCKER_HUB_MIRROR", "")
 
+        # ── API 端点地址 ────────────────────────────────────────────────────
+        # 前端使用的 API 地址（返回给浏览器）
+        self.mf_api_url: str = os.environ.get("MF_API_URL", "http://localhost:8200")
+        # Pod 内 Wrapper 回调使用的 API 地址。
+        # 显式设置 MF_POD_API_URL 时直接使用；未设置时从 MF_API_URL 自动推导：
+        #   localhost → 替换为本机对外 IP（通过连接 ARGO_SERVER_URL 检测）
+        #   已是真实 IP/域名 → 直接复用
+        pod_url = os.environ.get("MF_POD_API_URL", "")
+        if not pod_url:
+            pod_url = self.mf_api_url
+            if "localhost" in pod_url or "127.0.0.1" in pod_url:
+                host_ip = _detect_host_ip()
+                pod_url = pod_url.replace("localhost", host_ip).replace("127.0.0.1", host_ip)
+        self.mf_pod_api_url: str = pod_url
+        os.environ.setdefault("MF_POD_API_URL", pod_url)
+
         # ── LLM 配置（Phase 2）────────────────────────────────────────────────
         self.llm_provider: str = os.environ.get("MF_LLM_PROVIDER", "openai")
         self.llm_model: str = os.environ.get("MF_LLM_MODEL", "gpt-4o")
@@ -86,7 +124,7 @@ class Settings:
 
     def _ensure_userdata_dirs(self) -> None:
         """启动时自动创建必要的子目录（若不存在）。"""
-        for sub in ["nodes", "workspace", "vectorstore", "projects"]:
+        for sub in ["nodes", "workspace", "vectorstore"]:
             (self.data_root / sub).mkdir(parents=True, exist_ok=True)
         # 多用户结构
         self.shared_root.mkdir(parents=True, exist_ok=True)

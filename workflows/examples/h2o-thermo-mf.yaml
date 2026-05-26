@@ -15,7 +15,6 @@
 mf_version: "1.0"
 name: h2o-thermo
 description: "H2O: geometry optimization → frequency analysis → thermochemistry extraction"
-namespace: miqroforge-v2
 
 global_params: {}
 

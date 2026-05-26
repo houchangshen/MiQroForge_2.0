@@ -3,7 +3,6 @@
 mf_version: "1.0"
 name: e2e-tddft-casscf
 description: "TD-DFT/CASSCF fan-out: H2O → orca-tddft, gaussian-tddft, orca-casscf, gaussian-casscf"
-namespace: miqroforge-v2
 
 global_params: {}
 

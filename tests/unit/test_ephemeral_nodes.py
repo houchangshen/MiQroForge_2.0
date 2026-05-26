@@ -84,7 +84,7 @@ class TestMFNodeInstanceEphemeral:
             )
 
     def test_ephemeral_forbids_node(self):
-        with pytest.raises(ValueError, match="临时节点不得指定"):
+        with pytest.raises(ValueError, match="ephemeral 节点不得指定"):
             MFNodeInstance(
                 id="test",
                 ephemeral=True,
@@ -93,7 +93,7 @@ class TestMFNodeInstanceEphemeral:
             )
 
     def test_ephemeral_forbids_nodespec_path(self):
-        with pytest.raises(ValueError, match="临时节点不得指定"):
+        with pytest.raises(ValueError, match="ephemeral 节点不得指定"):
             MFNodeInstance(
                 id="test",
                 ephemeral=True,

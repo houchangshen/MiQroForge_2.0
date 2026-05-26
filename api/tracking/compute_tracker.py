@@ -18,9 +18,10 @@ from typing import Any
 class ComputeUsageTracker:
     """从 Argo workflow status 提取资源用量并记录到用户的使用量 JSONL。"""
 
-    def __init__(self, user_paths: "UserPaths", namespace: str = ""):
+    def __init__(self, user_paths: "UserPaths", namespace: str = "", currency: str = "USD"):
         self._paths = user_paths
         self._ns = namespace
+        self._currency = currency
         self._log_path = user_paths.usage_dir / "compute_usage.jsonl"
 
     def record_workflow(
@@ -42,6 +43,28 @@ class ComputeUsageTracker:
 
         self._log_path.parent.mkdir(parents=True, exist_ok=True)
 
+        # ── Dedup: read existing (workflow, node_name) pairs ──
+        existing_records: set[tuple[str, str]] = set()
+        if self._log_path.exists():
+            try:
+                with open(self._log_path, "r", encoding="utf-8") as f_existing:
+                    for line in f_existing:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        try:
+                            rec = json.loads(line)
+                            wf = rec.get("workflow", "")
+                            nn = rec.get("node_name", "")
+                            if wf and nn:
+                                existing_records.add((wf, nn))
+                        except json.JSONDecodeError:
+                            continue
+            except OSError:
+                pass
+
+        workflow_name = workflow_json.get("metadata", {}).get("name", "")
+
         with open(self._log_path, "a", encoding="utf-8") as f:
             for node_id, node_data in nodes.items():
                 if node_data.get("type") != "Pod":
@@ -50,6 +73,10 @@ class ComputeUsageTracker:
 
                 # 只记录成功/失败的实际执行
                 if phase not in ("Succeeded", "Failed"):
+                    continue
+
+                # ── Dedup: skip if (workflow, node_name) already recorded ──
+                if (workflow_name, node_id) in existing_records:
                     continue
 
                 started = node_data.get("startedAt", "")
@@ -63,7 +90,7 @@ class ComputeUsageTracker:
                 gpu_hours = round(resources.get("gpu", 0) * duration / 3600, 4)
 
                 record = {
-                    "workflow": workflow_json.get("metadata", {}).get("name", ""),
+                    "workflow": workflow_name,
                     "project_id": project_id,
                     "node_name": node_id,
                     "template": node_data.get("templateName", ""),
@@ -75,6 +102,7 @@ class ComputeUsageTracker:
                     "core_hours": core_hours,
                     "gpu_hours": gpu_hours,
                     "phase": phase,
+                    "currency": self._currency,
                     "recorded_at": datetime.now(timezone.utc).isoformat(),
                 }
                 f.write(json.dumps(record, ensure_ascii=False) + "\n")

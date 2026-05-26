@@ -29,6 +29,7 @@ def run_explore_agent(
     software: str,
     avoid_directions: str = "",
     project_id: str = "",
+    projects_dir: str = "",
 ) -> str:
     """运行 Explore 子 Agent：搜索 → 强制合成 → 返回摘要。
 
@@ -109,8 +110,8 @@ def run_explore_agent(
             else:
                 try:
                     result = tool_fn.invoke(args)
-                    if isinstance(result, str) and len(result) > 8000:
-                        result = result[:8000] + "\n\n[... truncated at 8KB ...]"
+                    if isinstance(result, str) and len(result) > 20000:
+                        result = result[:20000] + "\n\n[... truncated at 20KB ...]"
                 except Exception as e:
                     result = json.dumps({"error": f"Tool '{name}' failed: {e}"})
 
@@ -167,6 +168,7 @@ def run_explore_agent(
     finished_at = datetime.now().isoformat()
     _save_log(
         project_id=project_id,
+        projects_dir=projects_dir,
         started_at=started_at,
         finished_at=finished_at,
         software=software,
@@ -185,6 +187,7 @@ def run_explore_agent(
 
 def _save_log(
     project_id: str,
+    projects_dir: str,
     started_at: str,
     finished_at: str,
     software: str,
@@ -198,10 +201,13 @@ def _save_log(
         return
 
     try:
-        # __file__ = .../MiQroForge_2.0/agents/subagent/explore/agent.py
-        # .parent.parent.parent.parent = .../MiQroForge_2.0/
-        root = Path(__file__).resolve().parent.parent.parent.parent
-        log_dir = root / "userdata" / "projects" / project_id / "conversations" / "explore"
+        if not projects_dir:
+            raise ValueError(
+                "Explore sub-agent requires projects_dir (user-scoped projects root). "
+                "The legacy V1 path fallback has been removed. "
+                "Caller must provide a valid user-scoped projects directory."
+            )
+        log_dir = Path(projects_dir) / project_id / "conversations" / "explore"
         log_dir.mkdir(parents=True, exist_ok=True)
 
         now = datetime.now()

@@ -17,12 +17,59 @@ router = APIRouter(tags=["usage"])
 
 
 def _load_billing_rates(settings) -> dict:
-    bp = settings.userdata_root / "billing.yaml"
-    if not bp.exists():
-        return {}
+    """Load pricing from models.yaml (LLM) and compute_pricing.yaml (compute).
+    
+    Falls back to billing.yaml (deprecated) if new pricing files don't exist.
+    """
     import yaml
-    with bp.open("r", encoding="utf-8") as f:
-        return yaml.safe_load(f) or {}
+    
+    result: dict = {}
+    models_path = settings.shared_root / "models.yaml"
+    compute_path = settings.shared_root / "compute_pricing.yaml"
+    billing_path = settings.userdata_root / "billing.yaml"
+    
+    # ── LLM pricing from models.yaml ──
+    if models_path.exists():
+        with models_path.open("r", encoding="utf-8") as f:
+            models_cfg = yaml.safe_load(f) or {}
+        
+        llm_input: dict[str, float] = {}
+        llm_output: dict[str, float] = {}
+        models = models_cfg.get("models", {})
+        for name, cfg in models.items():
+            if isinstance(cfg, dict):
+                inp_price = cfg.get("input_price_per_1m")
+                out_price = cfg.get("output_price_per_1m")
+                model_id = cfg.get("model_id", name)
+                if inp_price is not None:
+                    llm_input[model_id] = float(inp_price)
+                if out_price is not None:
+                    llm_output[model_id] = float(out_price)
+        
+        defaults = models_cfg.get("default_pricing", {})
+        if defaults:
+            llm_input["default"] = float(defaults.get("llm_input_per_1m", 1.0))
+            llm_output["default"] = float(defaults.get("llm_output_per_1m", 4.0))
+            result["currency"] = defaults.get("currency", "USD")
+        
+        result["llm_per_1m_input_tokens"] = llm_input
+        result["llm_per_1m_output_tokens"] = llm_output
+    
+    # ── Compute pricing from compute_pricing.yaml ──
+    if compute_path.exists():
+        with compute_path.open("r", encoding="utf-8") as f:
+            compute_cfg = yaml.safe_load(f) or {}
+        result["compute_per_core_hour"] = float(compute_cfg.get("cpu_price_per_core_hour", 0.05))
+        result["compute_per_gpu_hour"] = float(compute_cfg.get("gpu_price_per_gpu_hour", 0.50))
+        if "currency" not in result:
+            result["currency"] = compute_cfg.get("currency", "USD")
+    
+    # ── Deprecated billing.yaml fallback ──
+    if not result and billing_path.exists():
+        with billing_path.open("r", encoding="utf-8") as f:
+            return yaml.safe_load(f) or {}
+    
+    return result
 
 
 def _read_jsonl(path: Path) -> list[dict]:
@@ -98,12 +145,16 @@ def get_token_usage(
     # Estimate cost
     rates = _load_billing_rates(global_settings())
     est = 0.0
+    llm_input = rates.get("llm_per_1m_input_tokens", {})
+    llm_output = rates.get("llm_per_1m_output_tokens", {})
+    default_inp = llm_input.get("default", 1.0)
+    default_out = llm_output.get("default", 4.0)
     for model_name, stats in summary.by_model.items():
-        inp_rate = rates.get("llm_per_1k_input_tokens", {}).get(model_name, 0)
-        out_rate = rates.get("llm_per_1k_output_tokens", {}).get(model_name, 0)
+        inp_rate = llm_input.get(model_name, default_inp)
+        out_rate = llm_output.get(model_name, default_out)
         model_inp = stats.get("input_tokens", 0)
         model_out = stats.get("output_tokens", 0)
-        est += (model_inp / 1000) * inp_rate + (model_out / 1000) * out_rate
+        est += (model_inp / 1_000_000) * inp_rate + (model_out / 1_000_000) * out_rate
     summary.estimated_cost = round(est, 4)
 
     return summary

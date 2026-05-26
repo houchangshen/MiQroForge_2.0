@@ -3,7 +3,6 @@
 mf_version: "1.0"
 name: e2e-hf-mp2
 description: "HF/MP2 fan-out: H2O → orca-hf, gaussian-hf, orca-mp2, gaussian-mp2"
-namespace: miqroforge-v2
 
 global_params: {}
 

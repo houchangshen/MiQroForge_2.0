@@ -33,21 +33,14 @@ Call `port_mapping()` AFTER writing nodespec.yaml.
 {% endif %}
 
 {% if iteration > 0 %}
-## Previous Attempt (iteration {{ iteration }}):
-{% if prev_nodespec %}
-Previous nodespec.yaml:
-```yaml
-{{ prev_nodespec }}
-```
-{% endif %}
-{% if prev_run_sh %}
-Previous run.sh (first 20 lines):
-```bash
-{{ prev_run_sh[:500] }}
-```
-{% endif %}
+## Previous Attempt (iteration {{ iteration }}) — Retry Mode
 
-### Evaluation Issues to Fix:
+**The previous round's files are already in the sandbox directory.** Use list_node_files() and read_node_file() to inspect them as needed. Key files:
+- `nodespec.yaml` — previous node spec
+- `profile/run.sh` — previous execution script
+- `profile/input.*.template` — previous input templates
+
+### What went wrong:
 {% for issue in eval_issues %}
 - {{ issue }}
 {% endfor %}
@@ -62,6 +55,8 @@ Previous run.sh (first 20 lines):
 - stderr (last 500 chars): {{ sandbox_result.stderr[-500:] }}
 {% endif %}
 {% endif %}
+
+Review the existing files, fix what went wrong, and retry. Files you write will overwrite the previous round's files.
 {% endif %}
 
 ## Instructions:

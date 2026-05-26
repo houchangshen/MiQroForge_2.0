@@ -187,8 +187,6 @@ def cmd_run(yaml_path: str) -> int:
         _error("校验失败，无法提交。")
         return 1
 
-    namespace = workflow.namespace or namespace
-
     # Step 2: Compile
     try:
         argo_dict = compile_to_argo(

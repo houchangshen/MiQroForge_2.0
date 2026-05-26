@@ -33,7 +33,7 @@ The oldest and simplest method. Divides overlap population equally between atoms
 ### Usage
 
 ```
-# HF/6-31G(d) Pop=Full
+\# HF/6-31G(d) Pop=Full
 ```
 
 ### Output Format
@@ -63,7 +63,7 @@ Based on Natural Atomic Orbitals (NAOs). More stable with respect to basis set c
 
 Requires NBO program interface:
 ```
-# B3LYP/6-31G(d) Pop=NBO
+\# B3LYP/6-31G(d) Pop=NBO
 ```
 
 ### Key Features
@@ -80,7 +80,7 @@ Bader's Quantum Theory of Atoms in Molecules. Partitions space based on gradient
 ### Usage
 
 ```
-# B3LYP/6-31G(d) Pop=AIM
+\# B3LYP/6-31G(d) Pop=AIM
 ```
 
 ### Key Features
@@ -97,7 +97,7 @@ ChElPG (Charges from Electrostatic Potential Grid) fits atomic charges to reprod
 ### Usage
 
 ```
-# B3LYP/6-31G(d) Pop=ChElPG
+\# B3LYP/6-31G(d) Pop=ChElPG
 ```
 
 ### Key Features
@@ -114,7 +114,7 @@ Fits atomic charges to the electrostatic potential on concentric surfaces around
 ### Usage
 
 ```
-# B3LYP/6-31G(d) Pop=MK
+\# B3LYP/6-31G(d) Pop=MK
 ```
 
 ### Key Features
@@ -127,7 +127,7 @@ Fits atomic charges to the electrostatic potential on concentric surfaces around
 ### Custom Radii
 
 ```
-# B3LYP/6-31G(d) Pop=MK(ReadRadii)
+\# B3LYP/6-31G(d) Pop=MK(ReadRadii)
 ```
 
 Custom radii specified in additional input section.
@@ -139,7 +139,7 @@ Partitions electron density based on promolecular (atomic) densities.
 ### Usage
 
 ```
-# B3LYP/6-31G(d) Pop=Hirshfeld
+\# B3LYP/6-31G(d) Pop=Hirshfeld
 ```
 
 ### Key Features
@@ -156,7 +156,7 @@ Uses Gaussian's standard atomic densities instead of HLY's densities.
 ### Usage
 
 ```
-# B3LYP/6-31G(d) Pop=HLYGAt
+\# B3LYP/6-31G(d) Pop=HLYGAt
 ```
 
 ## CM5 (Charge Model 5)
@@ -166,7 +166,7 @@ Truhlar's charge model based on Hirshfeld charges with parameterized corrections
 ### Usage
 
 ```
-# B3LYP/6-31G(d) Pop=CM5
+\# B3LYP/6-31G(d) Pop=CM5
 ```
 
 ### Key Features
@@ -182,7 +182,7 @@ Natural orbitals are the eigenfunctions of the one-particle density matrix.
 ### Usage
 
 ```
-# B3LYP/6-31G(d) Pop=CNDO
+\# B3LYP/6-31G(d) Pop=CNDO
 ```
 
 Natural orbitals are automatically computed for correlated methods (MP2, CCSD, etc.) and printed in the output.
@@ -194,7 +194,7 @@ Natural orbitals are automatically computed for correlated methods (MP2, CCSD, e
 Available through NBO analysis or as part of population analysis:
 
 ```
-# B3LYP/6-31G(d) Pop=NBO
+\# B3LYP/6-31G(d) Pop=NBO
 ```
 
 ### Mayer Bond Order
@@ -228,10 +228,10 @@ Available with certain population analysis options.
 Population analysis can be combined with most calculation types:
 
 ```
-# B3LYP/6-31G(d) Opt Freq Pop=Full      # Opt + freq + population
-# MP2/cc-pVTZ Pop=NBO                    # MP2 + NBO analysis
-# HF/6-31G(d) SCRF=(Water) Pop=MK       # Solvated ESP charges
-# CASSCF/6-31G(d) Pop=Full              # CASSCF populations
+\# B3LYP/6-31G(d) Opt Freq Pop=Full      # Opt + freq + population
+\# MP2/cc-pVTZ Pop=NBO                    # MP2 + NBO analysis
+\# HF/6-31G(d) SCRF=(Water) Pop=MK       # Solvated ESP charges
+\# CASSCF/6-31G(d) Pop=Full              # CASSCF populations
 ```
 
 ## Reading Additional Input
@@ -239,7 +239,7 @@ Population analysis can be combined with most calculation types:
 For custom radii or other modifications:
 
 ```
-# B3LYP/6-31G(d) Pop=MK(ReadRadii)
+\# B3LYP/6-31G(d) Pop=MK(ReadRadii)
 
 Title
 

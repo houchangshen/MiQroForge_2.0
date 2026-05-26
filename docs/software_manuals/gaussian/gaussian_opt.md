@@ -714,13 +714,13 @@ Optimization completed.
    calculation at a higher level of theory. The following route section
    automatically performs an HF/6-31G(d,p) optimization followed by an
    MP4/6-31G(d,p) single point energy calculation :
-# MP4/6-31G(d,p)//HF/6-31G(d,p) Test
+\# MP4/6-31G(d,p)//HF/6-31G(d,p) Test
    Note that the Opt keyword is not required in this case. However, it may
    be included if setting any of its options is desired.
    Modifying Redundant Internal Coordinates. The following input file
    illustrates the method for modifying redundant internal coordinates
    within an input file:
-   # HF/6-31G(d) Opt=ModRedun Test
+\   # HF/6-31G(d) Opt=ModRedun Test
    Opt job
    0,1
 
@@ -788,7 +788,7 @@ Optimization completed.
    below.
    Performing Partial Optimizations. The following job illustrates the
    method for freezing variables during an optimization:
-   # B3LYP/6-31G(d) Opt=ReadOpt
+\   # B3LYP/6-31G(d) Opt=ReadOpt
    Partial optimization of Fe2S2
    cluster with phenylthiolates.
    -2,1
@@ -822,7 +822,7 @@ Optimization completed.
    example, this route section restarts a B3LYP/6-31G(d) Berny
    optimization to a second-order saddle point:
 %Chk=saddle2
-# Opt=(TS,Restart,MaxCyc=50) Test
+\# Opt=(TS,Restart,MaxCyc=50) Test
    The model chemistry and starting geometry are retrieved from the
    checkpoint file. Options specifying the optimization type and procedure
    are required in the route section for the restart job (e.g., TS in the
@@ -843,7 +843,7 @@ Optimization completed.
    initiates a search for a transition structure connecting specific
    reactants and products. The input for this option has this general
    structure (blank lines are omitted):
-   # HF/6-31G(d) Opt=QST2 # HF/6-31G(d) (Opt=QST2,ModRedun)
+\   # HF/6-31G(d) Opt=QST2 # HF/6-31G(d) (Opt=QST2,ModRedun)
    First title section First title section
    Molecule specification for the reactants Molecule specification for the
    reactants
@@ -924,7 +924,7 @@ Optimization completed.
    Basic GIC input. Here is an example of using the generalized internal
    coordinates defined by the user from scratch for the geometry
    optimization of the water molecule.
-# HF opt=readallgic
+\# HF opt=readallgic
 Title
  0 1
 
@@ -972,7 +972,7 @@ Title
    coordinates R1=R(1,2) and R2=R(1,3) are parsed as pure distances and
    given here in Angstroms, and the HOH=A(2,1,3) is a pure valence angle
    in degrees.
-# HF opt=readallgic
+\# HF opt=readallgic
 Title
  0 1
 
@@ -1013,7 +1013,7 @@ OHSym2=(R(1,2)-R(1,3))/sqrt(2)
    therefore given here in arbitrary units. The units are actually Bohrs
    in this case because the 2^-1/2 factor is taken as dimensionless and
    the values of R(1,2) and R(1,3) are taken in Bohrs.
-# HF opt=readallgic
+\# HF opt=readallgic
 Title
  0 1
 O
@@ -2119,13 +2119,13 @@ Optimization completed.
    calculation at a higher level of theory. The following route section
    automatically performs an HF/6-31G(d,p) optimization followed by an
    MP4/6-31G(d,p) single point energy calculation :
-# MP4/6-31G(d,p)//HF/6-31G(d,p) Test
+\# MP4/6-31G(d,p)//HF/6-31G(d,p) Test
    Note that the Opt keyword is not required in this case. However, it may
    be included if setting any of its options is desired.
    Modifying Redundant Internal Coordinates. The following input file
    illustrates the method for modifying redundant internal coordinates
    within an input file:
-   # HF/6-31G(d) Opt=ModRedun Test
+\   # HF/6-31G(d) Opt=ModRedun Test
    Opt job
    0,1
 
@@ -2193,7 +2193,7 @@ Optimization completed.
    below.
    Performing Partial Optimizations. The following job illustrates the
    method for freezing variables during an optimization:
-   # B3LYP/6-31G(d) Opt=ReadOpt
+\   # B3LYP/6-31G(d) Opt=ReadOpt
    Partial optimization of Fe2S2
    cluster with phenylthiolates.
    -2,1
@@ -2227,7 +2227,7 @@ Optimization completed.
    example, this route section restarts a B3LYP/6-31G(d) Berny
    optimization to a second-order saddle point:
 %Chk=saddle2
-# Opt=(TS,Restart,MaxCyc=50) Test
+\# Opt=(TS,Restart,MaxCyc=50) Test
    The model chemistry and starting geometry are retrieved from the
    checkpoint file. Options specifying the optimization type and procedure
    are required in the route section for the restart job (e.g., TS in the
@@ -2248,7 +2248,7 @@ Optimization completed.
    initiates a search for a transition structure connecting specific
    reactants and products. The input for this option has this general
    structure (blank lines are omitted):
-   # HF/6-31G(d) Opt=QST2 # HF/6-31G(d) (Opt=QST2,ModRedun)
+\   # HF/6-31G(d) Opt=QST2 # HF/6-31G(d) (Opt=QST2,ModRedun)
    First title section First title section
    Molecule specification for the reactants Molecule specification for the
    reactants
@@ -2329,7 +2329,7 @@ Optimization completed.
    Basic GIC input. Here is an example of using the generalized internal
    coordinates defined by the user from scratch for the geometry
    optimization of the water molecule.
-# HF opt=readallgic
+\# HF opt=readallgic
 Title
  0 1
 
@@ -2377,7 +2377,7 @@ Title
    coordinates R1=R(1,2) and R2=R(1,3) are parsed as pure distances and
    given here in Angstroms, and the HOH=A(2,1,3) is a pure valence angle
    in degrees.
-# HF opt=readallgic
+\# HF opt=readallgic
 Title
  0 1
 
@@ -2418,7 +2418,7 @@ OHSym2=(R(1,2)-R(1,3))/sqrt(2)
    therefore given here in arbitrary units. The units are actually Bohrs
    in this case because the 2^-1/2 factor is taken as dimensionless and
    the values of R(1,2) and R(1,3) are taken in Bohrs.
-# HF opt=readallgic
+\# HF opt=readallgic
 Title
  0 1
 O

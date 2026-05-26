@@ -9,7 +9,6 @@ name: psi4-h2o-thermo
 description: >
   Water molecule thermochemistry using Psi4: geometry optimization followed
   by vibrational frequency analysis to confirm a true minimum.
-namespace: miqroforge-v2
 
 global_params: {}
 

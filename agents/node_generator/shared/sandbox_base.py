@@ -43,18 +43,27 @@ def _docker_available() -> bool:
 
 
 def _get_sandbox_base_dir(
-    project_id: str | None = None,
-    run_name: str | None = None,
+    project_id: str,
+    run_name: str,
+    projects_dir: str | Path,
 ) -> Path:
     """获取沙箱基础目录。
 
-    project_id 和 run_name 必须同时提供，在项目 runs 目录下创建。
-    任缺其一抛出 ValueError，不再回退到全局 sandbox_runs/。
+    必须在正确的用户项目目录下创建，不接受回退到旧路径。
+
+    Args:
+        project_id: 项目 ID（必填）。
+        run_name: 运行名称（必填）。
+        projects_dir: 用户项目根目录（必填）。
+
+    Raises:
+        ValueError: 任一参数缺失。
     """
     if not project_id or not run_name:
         raise ValueError("sandbox requires both project_id and run_name")
-    root = Path(__file__).parent.parent.parent.parent
-    base = root / "userdata" / "projects" / project_id / "runs" / run_name
+    if not projects_dir:
+        raise ValueError("sandbox requires projects_dir (user-scoped projects root)")
+    base = Path(projects_dir) / project_id / "runs" / run_name
     base.mkdir(parents=True, exist_ok=True)
     return base
 
@@ -62,22 +71,28 @@ def _get_sandbox_base_dir(
 def create_sandbox_dir(
     project_id: str | None = None,
     run_name: str | None = None,
+    projects_dir: str | Path | None = None,
 ) -> Path:
     """创建一个持久化的沙箱工作目录。调用方负责在不再需要时清理。
 
     Args:
         project_id: 项目 ID（必填）。
         run_name: 运行名称（必填）。
+        projects_dir: 用户项目根目录（必填）。
 
     Returns:
         沙箱目录路径（含 input/、output/、workspace/ 子目录），
         位于 projects/<id>/runs/<name>/sandbox_<timestamp>/。
 
     Raises:
-        ValueError: project_id 或 run_name 缺失。
+        ValueError: 任一参数缺失。
     """
+    if not project_id or not run_name:
+        raise ValueError("sandbox requires both project_id and run_name")
+    if not projects_dir:
+        raise ValueError("sandbox requires projects_dir (user-scoped projects root)")
     run_id = datetime.now().strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:6]
-    sandbox_dir = _get_sandbox_base_dir(project_id, run_name) / f"sandbox_{run_id}"
+    sandbox_dir = _get_sandbox_base_dir(project_id, run_name, projects_dir) / f"sandbox_{run_id}"
     (sandbox_dir / "input").mkdir(parents=True)
     (sandbox_dir / "output").mkdir(parents=True)
     (sandbox_dir / "workspace").mkdir(parents=True)

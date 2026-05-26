@@ -18,7 +18,7 @@ One of RCFC or CalcFC must be specified.
 ## Basic Usage
 
 ```
-# HF/6-31G(d) IRC RCFC
+\# HF/6-31G(d) IRC RCFC
 ```
 
 Typical workflow:
@@ -94,7 +94,7 @@ Follow the path in Cartesian coordinates without mass-weighting.
 Read force constants from checkpoint file. This is the usual approach — run a frequency calculation first, then read its force constants.
 
 ```
-# HF/6-31G(d) IRC=RCFC
+\# HF/6-31G(d) IRC=RCFC
 ```
 
 ### CalcFC
@@ -154,7 +154,7 @@ Use the IRC algorithm from Gaussian 03 and earlier. Geometry is optimized at eac
 Default: 6 points in each direction, steps of 0.1 amu^(1/2) Bohr.
 
 ```
-# HF/6-31G(d) IRC=GS2
+\# HF/6-31G(d) IRC=GS2
 ```
 
 ## Availability
@@ -204,9 +204,9 @@ The transition state appears at the midpoint with energy and reaction coordinate
 ### Complete IRC Procedure
 
 ```
-# Step 1: Optimize TS
+\# Step 1: Optimize TS
 %chk=ts.chk
-# B3LYP/6-31G(d) Opt=(CalcFC,TS,NoEigenTest)
+\# B3LYP/6-31G(d) Opt=(CalcFC,TS,NoEigenTest)
 
 TS optimization
 
@@ -214,18 +214,18 @@ TS optimization
 [molecule]
 
 --Link1--
-# Step 2: Frequency calculation (verify TS)
+\# Step 2: Frequency calculation (verify TS)
 %chk=ts.chk
-# B3LYP/6-31G(d) Freq
+\# B3LYP/6-31G(d) Freq
 
 Frequency check
 
 0 1
 
 --Link1--
-# Step 3: IRC calculation
+\# Step 3: IRC calculation
 %chk=ts.chk
-# B3LYP/6-31G(d) IRC=RCFC
+\# B3LYP/6-31G(d) IRC=RCFC
 
 IRC from TS
 

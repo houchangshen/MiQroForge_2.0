@@ -176,3 +176,15 @@ async def require_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
+
+
+async def require_admin(
+    user: CurrentUser = Depends(require_user),
+) -> CurrentUser:
+    """与 require_user 相同，但要求 role == 'admin'。"""
+    if user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
+    return user

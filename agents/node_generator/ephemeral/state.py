@@ -17,6 +17,7 @@ class EphemeralGenState(TypedDict, total=False):
     # 中间状态
     _input_data: dict[str, str]             # 真实输入数据 {port_name: content}
     _project_id: str                        # 项目 ID（用于 workspace 和 sandbox 定位）
+    _projects_dir: str                      # 用户 projects 目录根路径（多用户场景下替代 userdata/projects）
     _run_name: str                          # 运行名称（用于 sandbox 定位）
     script: str                             # 生成的 Python 脚本
     exec_stdout: str                        # 执行 stdout

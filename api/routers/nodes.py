@@ -22,7 +22,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 
-from api.auth import CurrentUser, require_user
+from api.auth import CurrentUser, get_current_user, require_user
 from api.config import Settings, get_settings
 from api.dependencies import get_user_paths
 from api.user_paths import UserPaths
@@ -284,7 +284,7 @@ def _prefs_path(paths: UserPaths = Depends(get_user_paths)) -> Path:
 
 @router.get("/preferences", response_model=NodePreferencesResponse, summary="读取用户节点偏好设置")
 def get_node_preferences(
-    user: CurrentUser = Depends(require_user),
+    user: CurrentUser | None = Depends(get_current_user),
     path: Path = Depends(_prefs_path),
 ) -> NodePreferencesResponse:
     if not path.exists():
@@ -303,7 +303,7 @@ def get_node_preferences(
 @router.put("/preferences", response_model=NodePreferencesResponse, summary="写入用户节点偏好设置")
 def put_node_preferences(
     body: NodePreferencesUpdate,
-    user: CurrentUser = Depends(require_user),
+    user: CurrentUser | None = Depends(get_current_user),
     path: Path = Depends(_prefs_path),
 ) -> NodePreferencesResponse:
     data = {

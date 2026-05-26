@@ -205,7 +205,6 @@ Pipeline 输出参数带有 `default: ""`，因此个别实例被 gate 跳过不
 mf_version: "1.0"
 name: h2-pes-sweep
 description: H₂ 分子势能曲线扫描
-namespace: miqroforge-v2
 
 nodes:
   # 12 个不同 H-H 距离，逐个读取 xyz 文件
