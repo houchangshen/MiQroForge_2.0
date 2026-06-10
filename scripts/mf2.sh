@@ -165,7 +165,7 @@ cmd_ui() {
     pids+=($!)
 
     if [[ $prod_mode -eq 0 ]]; then
-        (cd frontend && npm run dev -- --host 0.0.0.0 --port "$ui_port") &
+        (cd frontend && npm install && npm run dev -- --host 0.0.0.0 --port "$ui_port") &
         pids+=($!)
     fi
 
