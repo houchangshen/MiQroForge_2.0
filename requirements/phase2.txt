@@ -18,6 +18,7 @@ python-multipart>=0.0.9   # FastAPI UploadFile / Form 解析（文件上传 API 
 
 # ── 大模型接口 ────────────────────────────────────────────────────────────────
 # openai>=1.0                # OpenAI / GPT-4o API
+langchain_openai             # LangChain OpenAI 集成
 
 # ── 向量检索（RAG 节点库） ─────────────────────────────────────────────────────
 # chromadb>=0.5              # 本地开发向量库
