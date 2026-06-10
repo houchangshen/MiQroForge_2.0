@@ -14,6 +14,13 @@ LOG_FILE="${LOG_DIR}/setup_infra_$(date +%Y%m%d_%H%M%S).log"
 
 mkdir -p "${LOG_DIR}"
 
+# Auto-load .env if present（与 mf2.sh 保持一致）
+if [ -f "$PROJECT_ROOT/.env" ]; then
+    set -a
+    source "$PROJECT_ROOT/.env"
+    set +a
+fi
+
 # 同时输出到终端和 log（去掉颜色码保证 log 可读）
 exec > >(tee >(sed 's/\x1b\[[0-9;]*m//g' >> "${LOG_FILE}")) 2>&1
 
@@ -107,7 +114,7 @@ export KUBECONFIG="${KUBE_CONFIG}"
 bash "${SCRIPT_DIR}/install/install_argo.sh" --server-only
 
 # ── 5. Workspace PVC ──────────────────────────────────────────────────────────
-# 从 .env 读取 ARGO_NAMESPACE（默认 miqroforge-v2）
+# 从 .env 已自动加载 ARGO_NAMESPACE，若未配置则使用默认值
 ARGO_NAMESPACE="${ARGO_NAMESPACE:-miqroforge-v2}"
 
 section "5 / 5  Workspace PVC（${ARGO_NAMESPACE}）"
