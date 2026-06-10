@@ -169,7 +169,7 @@ run_checks() {
 
     echo
     echo -e "${BOLD}[ 检测结果 ]${NC}"
-    if [[ ${#MF_MISSING[@]} -eq 0 ]]; then
+    if [[ -z "${MF_MISSING[*]:-}" ]]; then
         echo -e "  ${GREEN}${BOLD}✔ 所有依赖已就绪，可以开始 Phase 1 开发！${NC}"
         echo
         return 0
